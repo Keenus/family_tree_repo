@@ -207,18 +207,26 @@ $(document).ready(function() {
         const selectedPersonName = $('#selected_person').text();
         const selectedPerson = findPerson(obj, selectedPersonName);
 
-        if (selectedPerson) {
-            selectedPerson.children = selectedPerson.children || [];
-            selectedPerson.children.push({ ...addNewForm, children: [] });
+        if(!addNewForm.type || !addNewForm.name || !addNewForm.birthDate) {
+            return;
         } else {
-            console.error('Person not found');
+            if (selectedPerson) {
+                selectedPerson.children = selectedPerson.children || [];
+                selectedPerson.children.push({ ...preparePersonData(addNewForm), children: [] });
+            } else {
+                console.error('Person not found');
+            }
+            const $treeRoot = $('.tree > ul');
+            $treeRoot.empty();
+            $treeRoot.append(createTreeNode(obj));
+
+            console.log(obj);
+            $('#myModal').modal('hide');
         }
 
-        const $treeRoot = $('.tree > ul');
-        $treeRoot.empty();
-        $treeRoot.append(createTreeNode(obj));
 
-        $('#myModal').modal('hide');
+
+
     });
 
     const findPerson = (node, name) => {
@@ -236,15 +244,26 @@ $(document).ready(function() {
         return null;
     };
 
-    function resetTreePosition() {
-        const $tree = $('.tree');
-        currentScale = 1;
-        $tree.attr('data-x', 0).attr('data-y', 0);
-        $tree.css({
-            'transform': `translate(-100%, 0) scale(${currentScale})`,
-            'transform-origin': '50% 0'
-        });
+    function preparePersonData(data) {
+        const person = {
+            name: data.name,
+            dob: data.birthDate,
+            dod: data.deathDate ? data.deathDate : null,
+            image: data.type.toLowerCase() === 'tata' || data.type.toLowerCase() === 'dziadek' || data.type.toLowerCase() === 'syn' || data.type.toLowerCase() === 'mąż' || data.type.toLowerCase() === 'brat' ? 'example1.jpg' : 'example.jpg',
+            sex: data.type.toLowerCase() === 'tata' || data.type.toLowerCase() === 'dziadek' || data.type.toLowerCase() === 'syn' || data.type.toLowerCase() === 'mąż' || data.type.toLowerCase() === 'brat' ? 'male' : 'female'
+        }
+        return person;
     }
+
+        function resetTreePosition() {
+            const $tree = $('.tree');
+            currentScale = 1;
+            $tree.attr('data-x', 0).attr('data-y', 0);
+            $tree.css({
+                'transform': `translate(-100%, 0) scale(${currentScale})`,
+                'transform-origin': '50% 0'
+            });
+        }
 
     function adjustScale(delta, originX = window.innerWidth / 2, originY = 0) {
         const $tree = $('.tree');
