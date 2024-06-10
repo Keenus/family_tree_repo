@@ -11,6 +11,7 @@ var formInterface = {
 var addNewForm = { ...formInterface };
 
 let obj;
+let createNewMode
 
 $(document).ready(function() {
 
@@ -187,47 +188,40 @@ $(document).ready(function() {
         addNewForm = { ...formInterface };
     });
 
-    $('#confirm').click(() => {
-        if(!addNewForm.name) {
-            $('#name').addClass('border border-danger');
-        } else {
-            $('#name').removeClass('border border-danger');
-        }
-        if(!addNewForm.birthDate) {
-            $('#birthDate').addClass('border border-danger');
-        } else {
-            $('#birthDate').removeClass('border border-danger');
-        }
-        if(!addNewForm.type) {
-            $('#type').addClass('border border-danger');
-        } else {
-            $('#type').removeClass('border border-danger');
-        }
+    $('#confirm').click(() => validateAndSubmitForm());
 
-        const selectedPersonName = $('#selected_person').text();
-        const selectedPerson = findPerson(obj, selectedPersonName);
+    function validateAndSubmitForm() {
+        const { name, birthDate, type } = addNewForm;
+        $('#name').toggleClass('border border-danger', !name);
+        $('#birthDate').toggleClass('border border-danger', !birthDate);
+        $('#type').toggleClass('border border-danger', !type);
 
-        if(!addNewForm.type || !addNewForm.name || !addNewForm.birthDate) {
-            return;
-        } else {
-            if (selectedPerson) {
-                selectedPerson.children = selectedPerson.children || [];
-                selectedPerson.children.push({ ...preparePersonData(addNewForm), children: [] });
+        if (name && birthDate && type) {
+            const selectedPersonName = $('#selected_person').text();
+            const selectedPerson = findPerson(obj, selectedPersonName);
+
+            if (createNewMode) {
+                obj = { ...preparePersonData(addNewForm), children: [] };
+                createNewMode = false;
+                const $treeRoot = $('.tree > ul');
+                $treeRoot.empty();
+                $treeRoot.append(createTreeNode(obj));
             } else {
-                console.error('Person not found');
+                if (selectedPerson) {
+                    selectedPerson.children = selectedPerson.children || [];
+                    selectedPerson.children.push({ ...preparePersonData(addNewForm), children: [] });
+                } else {
+                    console.error('Person not found');
+                }
+                const $treeRoot = $('.tree > ul');
+                $treeRoot.empty();
+                $treeRoot.append(createTreeNode(obj));
             }
-            const $treeRoot = $('.tree > ul');
-            $treeRoot.empty();
-            $treeRoot.append(createTreeNode(obj));
 
-            console.log(obj);
             $('#myModal').modal('hide');
+            addNewForm = { ...formInterface };
         }
-
-
-
-
-    });
+    }
 
     const findPerson = (node, name) => {
         if (node.name === name) {
@@ -292,7 +286,18 @@ $(document).ready(function() {
         reader.readAsText(this.files[0]);
     })
 
+    $('#create-btn').on('click', function() {
+        addNewForm = { ...formInterface };
+        $('#myModal').modal('show');
+        $('#selected_person').text('root');
+        createNewMode = true;
+    });
+
     $('#save-btn').on('click', function() {
+        if(!obj) {
+            alert('Brak danych do zapisania');
+            return;
+        }
         const data = JSON.stringify(obj);
         const blob = new Blob([data], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
