@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+</head>
+<body>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title " id="exampleModalLabel">Dodaj członka rodziny</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group" >
+                        <label for="type">Wybierz pokrewieństwo <span id="selected_person"></span></label>
+                        <select class="form-control bg-dark text-white" id="type" required onchange="addNewForm['type'] = $('#type').val()">
+                            <option disabled selected value=null >--- Wybierz ---</option>
+                            <option>Tata</option>
+                            <option>Mama</option>
+                            <option>Mąż</option>
+                            <option>Żona</option>
+                            <option>Brat</option>
+                            <option>Siostra</option>
+                            <option>Syn</option>
+                            <option>Córka</option>
+                        </select>
+                    </div>
+                    <div class="form-group" >
+                        <label for="name">Imię i nazwisko</label>
+                        <input type="text" class="form-control bg-dark text-white" required id="name" placeholder="np. Jan Kowalski" onchange="addNewForm['name'] = $('#name').val()">
+                    </div>
+                    <div class="form-group" >
+                        <label for="birthDate">Data urodzenia</label>
+                        <input type="date" class="form-control bg-dark text-white" required id="birthDate" placeholder="" onchange="addNewForm['birthDate'] = $('#birthDate').val()">
+                    </div>
+                    <div class="form-check" >
+                        <input type="checkbox" checked class="form-check-input bg-dark text-white" id="alive">
+                        <label class="form-check-label" for="alive">Żyje do dziś</label>
+                    </div>
+
+                    <div class="form-group deathDate-group" id="deathDate-group">
+                        <label for="deathDate">Data śmierci</label>
+                        <input type="date" class="form-control bg-dark text-white" id="deathDate" placeholder="" onchange="addNewForm['deathDate'] = $('#deathDate').val()">
+                    </div>
+                    <div class="form-group localization-group" id="localization-group">
+                        <label for="localization">Localizacja</label>
+                        <input type="text" class="form-control bg-dark text-white" id="localization" placeholder="" onchange="addNewForm['localization'] = $('#localization').val()">
+                    </div>
+                    <div class="form-group localization-group">
+                        <label for="image">Ścieżka do obrazu</label>
+                        <input type="text" class="form-control bg-dark text-white" id="image" placeholder="" onchange="addNewForm['pathToImage'] = $('#image').val()">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancel">Anuluj</button>
+                <button type="button" class="btn btn-primary" id="confirm">Dodaj</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="buttons position-absolute">
+    <input type="file" id="file" style="display: none" accept="json">
+    <button class="reset-btn btn btn-secondary" id="fileInput"><i class="bi bi-upload"></i>Dodaj</button>
+    <button class="reset-btn btn btn-secondary" id="save-btn"><i class="bi bi-save"></i>Zapisz</button>
+    <button class="reset-btn btn btn-secondary" id="scale-btn-minus"><i class="bi bi-zoom-out"></i>Oddal</button>
+    <button class="reset-btn btn btn-secondary" id="scale-btn-plus"><i class="bi bi-zoom-in"></i>Przybliż</button>
+    <button class="reset-btn btn btn-secondary" id="reset-btn"><i class="bi bi-arrow-clockwise"></i>Wróć do początku</button>
+</div>
+
+<div class="tree-container">
+    <div class="tree">
+        <ul></ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script><script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{
+  "name": "Jan Kowalski",
+  "sex": "male",
+  "image": "example1.jpg",
+  "dob": "1950-01-15",
+  "dod": "2020-05-25",
+  "spouse": {
+    "name": "Maria Kowalska",
+    "sex": "female",
+    "image": "example.jpg",
+    "dob": "1952-03-18"
+  },
+  "children": [
+    {
+      "name": "Anna Nowak",
+      "sex": "female",
+      "image": "example.jpg",
+      "dob": "1975-04-22",
+      "spouse": {
+        "name": "Robert Nowak",
+        "sex": "male",
+        "image": "example1.jpg",
+        "dob": "1972-11-10"
+      },
+      "children": [
+        {
+          "name": "Emilia Wiśniewska",
+          "sex": "female",
+          "image": "example.jpg",
+          "dob": "2000-09-12",
+          "spouse": {
+            "name": "Marek Wiśniewski",
+            "sex": "male",
+            "image": "example1.jpg",
+            "dob": "1998-07-07"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "Michał Zieliński",
+      "sex": "male",
+      "image": "example1.jpg",
+      "dob": "1978-08-14",
+      "spouse": {
+        "name": "Laura Zielińska",
+        "sex": "female",
+        "image": "example1.jpg",
+        "dob": "1980-02-25"
+      },
+      "children": [
+        {
+          "name": "Krystian Jabłoński",
+          "sex": "male",
+          "image": "example.jpg",
+          "dob": "2005-06-30",
+          "children": []
+        },
+        {
+          "name": "Sara Wójcik",
+          "sex": "female",
+          "image": "example.jpg",
+          "dob": "2003-12-20",
+          "spouse": {
+            "name": "Dawid Wójcik",
+            "sex": "male",
+            "image": "example1.jpg",
+            "dob": "2001-05-15"
+          },
+          "children": [
+            {
+              "name": "Samuel Lewandowski",
+              "sex": "male",
+              "image": "example1.jpg",
+              "dob": "2025-11-11",
+              "children": []
+            },
+            {
+              "name": "Aleksander Kwiatkowski",
+              "sex": "male",
+              "image": "example1.jpg",
+              "dob": "2028-07-23",
+              "children": []
+            },
+            {
+              "name": "Zuzanna Bąk",
+              "sex": "female",
+              "image": "example.jpg",
+              "dob": "2030-01-01",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

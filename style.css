@@ -1,0 +1,275 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: url("bg.jpeg") center center;
+    background-size: contain;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.tree-container {
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(3px) contrast(0.6);
+    overflow: hidden;
+    position: relative;
+}
+
+.tree {
+    width: 100%;
+    height: 100%;
+    cursor: grab; /
+    position: absolute;
+    left: 50%;
+
+}
+
+.tree ul {
+    padding-top: 20px;
+    position: relative;
+    display: flex;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+}
+
+.tree li {
+    float: left;
+    text-align: center;
+    list-style-type: none;
+    position: relative;
+    padding: 20px 5px 0 5px;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+}
+
+.tree li::before,
+.tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 1px solid #ccc;
+    width: 50%;
+    height: 20px;
+}
+
+.tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 1px solid #ccc;
+}
+
+.tree li:only-child::after,
+.tree li:only-child::before {
+    display: none;
+}
+
+.tree li:only-child {
+    padding-top: 0;
+}
+
+.tree li:first-child::before,
+.tree li:last-child::after {
+    border: 0 none;
+}
+
+.tree li:last-child::before {
+    border-right: 1px solid #ccc;
+    border-radius: 0 5px 0 0;
+    -webkit-border-radius: 0 5px 0 0;
+    -moz-border-radius: 0 5px 0 0;
+}
+
+.tree li:first-child::after {
+    border-radius: 5px 0 0 0;
+    -webkit-border-radius: 5px 0 0 0;
+    -moz-border-radius: 5px 0 0 0;
+}
+
+.tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 1px solid #ccc;
+    width: 0;
+    height: 20px;
+}
+
+.add_button {
+    margin-left: .5rem;
+    opacity: 0;
+    transition: all .5s;
+}
+
+.tree li a {
+    margin-left: 5px;
+    min-width: 350px;
+    padding: 10px;
+    text-decoration: none;
+    color: #fff;
+    background: #434243;
+    font-family: arial, verdana, tahoma;
+    display: inline-block;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    box-shadow: 5px 5px 5px #000;
+    &:hover {
+        .add_button {
+            opacity: 1;
+        }
+    }
+}
+
+.male-bg{
+    background: radial-gradient(circle,#434243 60%, rgba(0, 73, 147, 0.5))!important;
+}
+
+.female-bg{
+    background: radial-gradient(circle,#434243 60%, rgba(143, 0, 79, 0.5))!important;
+}
+
+
+.male-bg .container .right .person_name{
+    border-bottom: 1px solid dodgerblue;
+}
+
+.female-bg .container .right .person_name{
+    border-bottom: 1px solid #8f004f;
+}
+
+
+.person_name {
+    padding-bottom: 5px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    flex-wrap: nowrap;
+}
+
+.birth_date, .death_date {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    text-align: left;
+    gap: 4px;
+}
+
+.check_loc {
+    display: flex;
+    align-items: end;
+    gap: 5px;
+}
+
+.value {
+    font-weight: bold;
+}
+
+.tree li a .container {
+    display: flex;
+    height: 100%;
+    gap: 10px;
+    padding: 0;
+}
+
+.tree li a .container .left {
+    display: flex;
+    align-items: start;
+    height: 100%;
+}
+
+.tree li a .container .left img {
+    height: 100px;
+    width: auto;
+    margin-right: 5px;
+    border-radius: 12px;
+}
+
+.tree li a .container .right {
+    height: 100%;
+}
+
+.tree li a:hover,
+.tree li a:hover+ul li a {
+    background: #c8e4f8!important;
+    color: #000;
+}
+
+.tree li a:hover+ul li::after,
+.tree li a:hover+ul li::before,
+.tree li a:hover+ul::before,
+.tree li a:hover+ul ul::before {
+    border-color: #94a0b4;
+}
+
+.tree li.spouse_node {
+    margin-top: -20px;
+    margin-left: 20px;
+}
+
+.buttons {
+    z-index: 999;
+    top: 0;
+    right: 0;
+    padding: 5px;
+    position: absolute;
+    display: flex;
+    gap: 5px;
+    button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 5px;
+    }
+}
+
+.modal-content {
+    background-color: #434243!important;
+    color: white;
+}
+
+.localization-group, .deathDate-group {
+    display: none;
+}
+
+#birthDate::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+#deathDate::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+.spouse-line {
+    display: flex;
+    justify-content: center;
+    padding-left: 50px;
+}
+
+.spouse::before {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    text-shadow: 5px 5px 5px #000;
+    font-weight: 800;
+    content: "\F28A \F28A";
+    color:gold;
+    font-family: 'bootstrap-icons';
+}
+
