@@ -15,6 +15,8 @@ let obj;
 let data = []
 let createNewMode
 
+let nodeCreatedFor = []
+
 $(document).ready(function() {
 
     function createTreeNode(node) {
@@ -22,6 +24,59 @@ $(document).ready(function() {
             return null;
         }
 
+        if(nodeCreatedFor.includes(node.id)) {
+            return;
+        }
+
+        //do usuniecia
+        if(node.pIds)
+        node.pIds.forEach(pId => {
+            if(nodeCreatedFor.includes(pId)) {
+                console.log(node.id + ' +++ ' + pId)
+            }
+        })
+        //
+
+
+        //create sopuse div
+
+        let $spouseDiv;
+        if (node.pIds && node.pIds.some(pId => nodeCreatedFor.includes(pId))) {
+            //create partners div
+            $spouseDiv = $('<div class="spouse"></div>');
+            node.pIds.forEach(pId => {
+                const pNode = obj[pId];
+                if (pNode) {
+                    $spouseDiv.append(createPartnerItem(node));
+                }
+            });
+        } else {
+            //create single item
+            return createItem(node);
+        }
+         return $spouseDiv;
+    }
+
+    function updateTreeNode(data) {
+
+        console.log('data')
+        console.log(data)
+
+        const $treeRoot = $('.tree > ul');
+        $treeRoot.empty();
+
+        // Find root nodes (nodes with no parents)
+        let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
+
+        rootNodes.forEach(person => {
+            const treeNode = createTreeNode(person);
+            if (treeNode) {
+                $treeRoot.append(treeNode);
+            }
+        });
+    }
+
+    function createItem(node) {
         const $li = $('<li>');
         const $a = $('<a href="#"></a>');
         const $leftDiv = $('<div class="left"></div>');
@@ -45,9 +100,6 @@ $(document).ready(function() {
                 const $dod = $('<div class="death_date"><span><i class="bi bi-file-text"></i> zm.</span> <span class="value"></span></div>');
                 $dod.find('.value').text(node.dod);
                 $rightContent.append($dod);
-
-                const $dodLoc = $('<div class="check_loc">Lokalizacja nagrobka: <button class="btn btn-outline-info btn-sm">Zobacz</button></div>');
-                $rightContent.append($dodLoc);
             }
         }
 
@@ -70,7 +122,6 @@ $(document).ready(function() {
             $a.addClass('female-bg');
         }
 
-        // Create child nodes
         const createChildNodes = (ids) => {
             const $ul = $('<ul>');
             ids.forEach(chId => {
@@ -84,10 +135,6 @@ $(document).ready(function() {
 
         if (node.chIds && node.chIds.length > 0) {
             $li.append(createChildNodes(node.chIds));
-        }
-
-        if (node.pIds && node.pIds.length > 0) {
-            $li.append(createChildNodes(node.pIds));
         }
 
         if (node.mId) {
@@ -107,27 +154,55 @@ $(document).ready(function() {
                 $li.append($ul);
             }
         }
+        nodeCreatedFor.push(node.id)
 
         return $li;
+
     }
 
-    function updateTreeNode(data) {
+    function createPartnerItem(node) {
+        console.log('createPartnerItem')
+        console.log(node)
+        const $li_partner = $('<li>');
+        const $a_partner = $('<a href="#"></a>');
+        const $leftDiv_partner = $('<div class="left"></div>');
+        const $img_partner = $('<img>', { src: node.image, alt: '' });
+        $leftDiv_partner.append($img_partner);
 
-        console.log('data')
-        console.log(data)
+        const $rightDiv_partner = $('<div class="right"></div>');
+        const $name_partner = $('<div>', { class: 'person_name', text: node.name });
 
-        const $treeRoot = $('.tree > ul');
-        $treeRoot.empty();
+        const $rightContent_partner = $('<div class="right_content"></div>');
+        if (node.dob || node.dod) {
+            $rightDiv_partner.append($rightContent_partner);
 
-        // Find root nodes (nodes with no parents)
-        const rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
-
-        rootNodes.forEach(person => {
-            const treeNode = createTreeNode(person);
-            if (treeNode) {
-                $treeRoot.append(treeNode);
+            if (node.dob) {
+                const $dob_partner = $('<div class="birth_date"><span><i class="bi bi-person-fill"></i> ur.</span> <span class="value"></span></div>');
+                $dob_partner.find('.value').text(node.dob);
+                $rightContent_partner.append($dob_partner);
             }
+
+            if (node.dod) {
+                const $dod_partner = $('<div class="death_date"><span><i class="bi bi-file-text"></i> zm.</span> <span class="value"></span></div>');
+                $dod_partner.find('.value').text(node.dod);
+                $rightContent_partner.append($dod_partner);
+            }
+        }
+
+        $rightDiv_partner.append($name_partner, $rightContent_partner);
+
+        const $containerDiv_partner = $('<div class="container"></div>');
+        const $addButton_partner = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
+        $addButton_partner.on('click', () => {
+            addNewPerson(node);
         });
+        $name_partner.append($addButton_partner);
+
+        $containerDiv_partner.append($leftDiv_partner, $rightDiv_partner);
+        $a_partner.append($containerDiv_partner);
+        $li_partner.append($a_partner);
+
+        return $li_partner;
     }
 
     function addNewPerson(node) {
