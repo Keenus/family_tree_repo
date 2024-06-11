@@ -145,11 +145,11 @@ body {
 }
 
 
-.male-bg .container .right .person_name{
+.male-bg .person_name{
     border-bottom: 1px solid dodgerblue;
 }
 
-.female-bg .container .right .person_name{
+.female-bg .person_name{
     border-bottom: 1px solid #8f004f;
 }
 
@@ -162,6 +162,7 @@ body {
     justify-content: space-between;
     align-items: start;
     flex-wrap: nowrap;
+    font-size: 24px;
 }
 
 .birth_date, .death_date {
@@ -188,21 +189,29 @@ body {
     padding: 0;
 }
 
-.tree li a .container .left {
+.left {
     display: flex;
     align-items: start;
     height: 100%;
 }
 
-.tree li a .container .left img {
+.left img {
     height: 100px;
     width: auto;
     margin-right: 5px;
     border-radius: 12px;
 }
 
-.tree li a .container .right {
+.right {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    justify-content: space-between;
     height: 100%;
+}
+
+.right_content {
+    text-align: left;
 }
 
 .tree li a:hover,
@@ -224,12 +233,14 @@ body {
 }
 
 .buttons {
+    max-width: 100vw;
     z-index: 999;
     top: 0;
     right: 0;
     padding: 5px;
     position: absolute;
     display: flex;
+    flex-wrap: wrap;
     gap: 5px;
     button {
         display: flex;

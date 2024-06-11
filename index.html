@@ -24,7 +24,7 @@
             </div>
             <div class="modal-body">
                 <form>
-                    <div class="form-group" >
+                    <div class="form-group" id="typeSelect">
                         <label for="type">Wybierz pokrewieństwo <span id="selected_person"></span></label>
                         <select class="form-control bg-dark text-white" id="type" required onchange="addNewForm['type'] = $('#type').val()">
                             <option disabled selected value=null >--- Wybierz ---</option>
@@ -38,6 +38,16 @@
                             <option>Córka</option>
                         </select>
                     </div>
+
+                    <div class="form-group" id="sexSelect">
+                        <label for="sex">Wybierz płeć <span id="selected_sex"></span></label>
+                        <select class="form-control bg-dark text-white" id="sex" required onchange="addNewForm['sex'] = $('#sex').val()">
+                            <option disabled selected value=null >--- Wybierz ---</option>
+                            <option value="female">Kobieta</option>
+                            <option value="male">Mężczyzna</option>
+                        </select>
+                    </div>
+
                     <div class="form-group" >
                         <label for="name">Imię i nazwisko</label>
                         <input type="text" class="form-control bg-dark text-white" required id="name" placeholder="np. Jan Kowalski" onchange="addNewForm['name'] = $('#name').val()">
@@ -75,7 +85,7 @@
 
 <div class="buttons position-absolute">
     <input type="file" id="file" style="display: none" accept="json">
-<!--    <button class="reset-btn btn btn-secondary" id="create-btn"><i class="bi bi-file-plus"></i>Utwórz</button>-->
+    <button class="reset-btn btn btn-secondary" id="create-btn"><i class="bi bi-file-plus"></i>Utwórz nową rodzinę</button>
     <button class="reset-btn btn btn-secondary" id="fileInput"><i class="bi bi-upload"></i>Dodaj</button>
     <button class="reset-btn btn btn-secondary" id="save-btn"><i class="bi bi-save"></i>Zapisz</button>
     <button class="reset-btn btn btn-secondary" id="scale-btn-minus"><i class="bi bi-zoom-out"></i>Oddal</button>

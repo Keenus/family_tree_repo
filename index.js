@@ -10,38 +10,25 @@ var formInterface = {
 
 var addNewForm = { ...formInterface };
 
+let lastUsedId = 0;
 let obj;
+let data = []
 let createNewMode
 
 $(document).ready(function() {
 
     function createTreeNode(node) {
-        const $li = $('<li></li>');
+        const $li = $('<li>');
         const $a = $('<a href="#"></a>');
-        const $div = $('<div class="spouse-line"></div>');
-
-        const $addButton = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
-        $addButton.on('click', () => {
-            $('#myModal').modal('show');
-            $('#selected_person').text(node.name);
-        });
-
         const $leftDiv = $('<div class="left"></div>');
         const $img = $('<img>', { src: node.image, alt: '' });
         $leftDiv.append($img);
 
         const $rightDiv = $('<div class="right"></div>');
-        const $name = $('<h3 class="person_name"></h3>').text(node.name);
-        $rightDiv.append($name);
+        const $name = $('<div>', { class: 'person_name', text: node.name });
 
-        if(node.sex === 'male') {
-            $a.addClass('male-bg')
-        } else if(node.sex === 'female') {
-            $a.addClass('female-bg')
-        }
-
+        const $rightContent = $('<div class="right_content"></div>');
         if (node.dob || node.dod) {
-            const $rightContent = $('<div class="right_content"></div>');
             $rightDiv.append($rightContent);
 
             if (node.dob) {
@@ -60,70 +47,81 @@ $(document).ready(function() {
             }
         }
 
+        $rightDiv.append($name, $rightContent);
+
         const $containerDiv = $('<div class="container"></div>');
-        $containerDiv.append($leftDiv, $rightDiv);
-        $a.append($containerDiv);
-
-        if(node.spouse) {
-            const $b = $('<a href="#"></a>');
-            const $containerSpouseDiv = $('<div class="container"></div>');
-
-            const $leftSpouseDiv = $('<div class="left"></div>');
-            const $SpouseImg = $('<img>', { src: node.spouse.image, alt: '' });
-            $leftSpouseDiv.append($SpouseImg);
-
-            const $rightSpouseDiv = $('<div class="right"></div>');
-            const $SpouseName = $('<h3 class="person_name"></h3>').text(node.spouse.name);
-            $rightSpouseDiv.append($SpouseName);
-
-            if (node.spouse.dob || node.spouse.dod) {
-                const $rightSpouseContent = $('<div class="right_content"></div>');
-                $rightSpouseDiv.append($rightSpouseContent);
-
-                if (node.spouse.dob) {
-                    const $dobSpouse = $('<div class="birth_date"><span><i class="bi bi-person-fill"></i> ur.</span> <span class="value"></span></div>');
-                    $dobSpouse.find('.value').text(node.spouse.dob);
-                    $rightSpouseContent.append($dobSpouse);
-                }
-
-                if (node.spouse.dod) {
-                    const $dodSpouse = $('<div class="death_date"><span><i class="bi bi-file-text"></i> zm.</span> <span class="value"></span></div>');
-                    $dodSpouse.find('.value').text(node.spouse.dod);
-                    $rightSpouseContent.append($dodSpouse);
-
-                    const $dodSpouseLoc = $('<div class="check_loc">Lokalizacja nagrobka: <button class="btn btn-outline-info btn-sm">Zobacz</button></div>');
-                    $rightSpouseContent.append($dodSpouseLoc);
-                }
-            }
-
-            $containerSpouseDiv.append($leftSpouseDiv, $rightSpouseDiv);
-            $containerSpouseDiv.addClass('spouse');
-            $b.append($containerSpouseDiv);
-
-            if(node.spouse.sex === 'male') {
-                $b.addClass('male-bg');
-            } else if(node.spouse.sex === 'female') {
-                $b.addClass('female-bg');
-            }
-            $b.addClass('position-relative');
-            $div.append($a, $b);
-        } else {
-            $div.append($a);
-        }
-
-        $li.append($div);
+        const $addButton = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
+        $addButton.on('click', () => {
+            addNewPerson(node);
+        });
         $name.append($addButton);
 
-        if (node.children && node.children.length > 0) {
-            const $ul = $('<ul></ul>');
-            node.children.forEach(childNode => {
-                $ul.append(createTreeNode(childNode));
-            });
+        $containerDiv.append($leftDiv, $rightDiv);
+        $a.append($containerDiv);
+        $li.append($a);
+
+        if(node.sex === 'male') {
+            $a.addClass('male-bg')
+        } else if(node.sex === 'female') {
+            $a.addClass('female-bg')
+        }
+
+        if (node.chIds && node.chIds.length > 0) {
+            const $ul = $('<ul>');
+            for (let chId of node.chIds) {
+                const chNode = obj[chId];
+                $ul.append(createTreeNode(chNode));
+            }
             $li.append($ul);
         }
 
+        if(node.pIds && node.pIds.length > 0) {
+            const $ul = $('<ul>');
+            for (let pId of node.pIds) {
+                const pNode = obj[pId];
+                $ul.append(createTreeNode(pNode));
+            }
+            $li.append($ul);
+        }
+
+        if(node.mId) {
+            const $ul = $('<ul>');
+            const pNode = obj[node.mId];
+            $ul.append(createTreeNode(pNode));
+            $li.append($ul);
+        }
+
+        if(node.fId) {
+            const $ul = $('<ul>');
+            const pNode = obj[node.fId];
+            $ul.append(createTreeNode(pNode));
+            $li.append($ul);
+        }
+
+        console.log('node')
+        console.log(node)
+
         return $li;
+
     }
+
+    function updateTreeNode(data) {
+        const $treeRoot = $('.tree > ul');
+        $treeRoot.empty();
+
+        data.forEach(person => {
+            $treeRoot.append(createTreeNode(person));
+        });
+    }
+
+    function addNewPerson(node) {
+        createNewMode = false;
+        $('#typeSelect').css('display', 'block');
+        $('#sexSelect').css('display', 'none');
+        $('#myModal').modal('show');
+        $('#selected_person').text(node.name);
+    }
+
 
     interact('.tree').draggable({
         inertia: true,
@@ -191,36 +189,112 @@ $(document).ready(function() {
     $('#confirm').click(() => validateAndSubmitForm());
 
     function validateAndSubmitForm() {
-        const { name, birthDate, type } = addNewForm;
+        const { name, birthDate } = addNewForm;
         $('#name').toggleClass('border border-danger', !name);
         $('#birthDate').toggleClass('border border-danger', !birthDate);
-        $('#type').toggleClass('border border-danger', !type);
 
-        if (name && birthDate && type) {
-            const selectedPersonName = $('#selected_person').text();
-            const selectedPerson = findPerson(obj, selectedPersonName);
-
-            if (createNewMode) {
-                obj = { ...preparePersonData(addNewForm), children: [] };
-                createNewMode = false;
-                const $treeRoot = $('.tree > ul');
-                $treeRoot.empty();
-                $treeRoot.append(createTreeNode(obj));
-            } else {
-                if (selectedPerson) {
-                    selectedPerson.children = selectedPerson.children || [];
-                    selectedPerson.children.push({ ...preparePersonData(addNewForm), children: [] });
-                } else {
-                    console.error('Person not found');
+        if(createNewMode) {
+            const { sex } = addNewForm;
+            $('#sex').toggleClass('border border-danger', !sex);
+            if (name && birthDate && sex) {
+                let newPerson = {
+                    id: 1,
+                    pIds: [],
+                    mId: null,
+                    fId: null,
+                    chIds: [],
+                    name: addNewForm.name,
+                    dob: addNewForm.birthDate,
+                    dod: addNewForm.deathDate,
+                    sex: sex,
+                    image: sex === 'male' ? 'example1.jpg' : 'example.jpg'
                 }
+                console.log(newPerson)
+                lastUsedId = 1;
+                obj = newPerson;
+                data.push(newPerson);
                 const $treeRoot = $('.tree > ul');
                 $treeRoot.empty();
                 $treeRoot.append(createTreeNode(obj));
+                $('#myModal').modal('hide');
+                addNewForm = { ...formInterface };
+                return
             }
-
-            $('#myModal').modal('hide');
-            addNewForm = { ...formInterface };
         }
+
+        let { type } = addNewForm;
+        $('#type').toggleClass('border border-danger', !type);
+        if (name && birthDate && type) {
+
+            let selectedPerson = data.find(person => person.name === $('#selected_person').text());
+
+            console.log(selectedPerson)
+                if (selectedPerson) {
+                    let newPerson = {
+                        id: lastUsedId + 1,
+                        pIds: [],
+                        mId: null,
+                        fId: null,
+                        chIds: [],
+                        name: addNewForm.name,
+                        dob: addNewForm.birthDate,
+                        dod: addNewForm.deathDate,
+                    }
+
+                    console.log(type)
+                    type = type.toLowerCase();
+
+                    const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
+
+                    selectedPerson = preparedData.selectedPerson;
+                    newPerson = preparedData.newPerson;
+
+                    console.log('selectedPerson')
+                    console.log(selectedPerson)
+
+                    console.log('newPerson')
+                    console.log(newPerson)
+
+                    data.push(newPerson);
+                    console.log(data)
+
+                   lastUsedId++;
+
+                    const $treeRoot = $('.tree > ul');
+                    $treeRoot.empty();
+                    $treeRoot.append(updateTreeNode(data));
+                    $('#myModal').modal('hide');
+                }
+        }
+    }
+
+    const preparePerson = (selectedPerson, type, id,newPerson) => {
+        if (type === 'mama') {
+            selectedPerson.mId = id;
+            newPerson.chIds.push(selectedPerson.id);
+        }
+        if (type === 'tata') {
+            selectedPerson.fId = id;
+            newPerson.chIds.push(selectedPerson.id);
+        }
+        if (type === 'syn' || type === 'córka') {
+            selectedPerson.chIds.push(id);
+            console.log('selectedPerson.chIds')
+            console.log(selectedPerson.chIds)
+            if (selectedPerson.sex === 'male')
+                newPerson.fId = selectedPerson.id;
+            else
+                newPerson.mId = selectedPerson.id;
+        }
+        if (type === 'brat' || type === 'siostra') {
+            selectedPerson.chIds.push(id);
+            newPerson.sibIds.push(selectedPerson.id);
+        }
+        if (type === 'mąż' || type === 'żona') {
+            selectedPerson.pIds.push(id);
+            newPerson.chIds.push(selectedPerson.id);
+        }
+        return {selectedPerson, newPerson}
     }
 
     const findPerson = (node, name) => {
@@ -249,15 +323,15 @@ $(document).ready(function() {
         return person;
     }
 
-        function resetTreePosition() {
-            const $tree = $('.tree');
-            currentScale = 1;
-            $tree.attr('data-x', 0).attr('data-y', 0);
-            $tree.css({
-                'transform': `translate(-100%, 0) scale(${currentScale})`,
-                'transform-origin': '50% 0'
-            });
-        }
+    function resetTreePosition() {
+        const $tree = $('.tree');
+        currentScale = 1;
+        $tree.attr('data-x', 0).attr('data-y', 0);
+        $tree.css({
+            'transform': `translate(-100%, 0) scale(${currentScale})`,
+            'transform-origin': '50% 0'
+        });
+    }
 
     function adjustScale(delta, originX = window.innerWidth / 2, originY = 0) {
         const $tree = $('.tree');
@@ -287,11 +361,14 @@ $(document).ready(function() {
     })
 
     $('#create-btn').on('click', function() {
+        createNewMode = true;
         addNewForm = { ...formInterface };
+        $('#typeSelect').css('display', 'none');
+        $('#sexSelect').css('display', 'block');
         $('#myModal').modal('show');
         $('#selected_person').text('root');
-        createNewMode = true;
     });
+
 
     $('#save-btn').on('click', function() {
         if(!obj) {
