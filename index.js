@@ -18,6 +18,10 @@ let createNewMode
 $(document).ready(function() {
 
     function createTreeNode(node) {
+        if (!node) {
+            return null;
+        }
+
         const $li = $('<li>');
         const $a = $('<a href="#"></a>');
         const $leftDiv = $('<div class="left"></div>');
@@ -60,57 +64,69 @@ $(document).ready(function() {
         $a.append($containerDiv);
         $li.append($a);
 
-        if(node.sex === 'male') {
-            $a.addClass('male-bg')
-        } else if(node.sex === 'female') {
-            $a.addClass('female-bg')
+        if (node.sex === 'male') {
+            $a.addClass('male-bg');
+        } else if (node.sex === 'female') {
+            $a.addClass('female-bg');
         }
+
+        // Create child nodes
+        const createChildNodes = (ids) => {
+            const $ul = $('<ul>');
+            ids.forEach(chId => {
+                const chNode = obj[chId];
+                if (chNode) {
+                    $ul.append(createTreeNode(chNode));
+                }
+            });
+            return $ul;
+        };
 
         if (node.chIds && node.chIds.length > 0) {
-            const $ul = $('<ul>');
-            for (let chId of node.chIds) {
-                const chNode = obj[chId];
-                $ul.append(createTreeNode(chNode));
-            }
-            $li.append($ul);
+            $li.append(createChildNodes(node.chIds));
         }
 
-        if(node.pIds && node.pIds.length > 0) {
-            const $ul = $('<ul>');
-            for (let pId of node.pIds) {
-                const pNode = obj[pId];
-                $ul.append(createTreeNode(pNode));
-            }
-            $li.append($ul);
+        if (node.pIds && node.pIds.length > 0) {
+            $li.append(createChildNodes(node.pIds));
         }
 
-        if(node.mId) {
+        if (node.mId) {
             const $ul = $('<ul>');
             const pNode = obj[node.mId];
-            $ul.append(createTreeNode(pNode));
-            $li.append($ul);
+            if (pNode) {
+                $ul.append(createTreeNode(pNode));
+                $li.append($ul);
+            }
         }
 
-        if(node.fId) {
+        if (node.fId) {
             const $ul = $('<ul>');
             const pNode = obj[node.fId];
-            $ul.append(createTreeNode(pNode));
-            $li.append($ul);
+            if (pNode) {
+                $ul.append(createTreeNode(pNode));
+                $li.append($ul);
+            }
         }
 
-        console.log('node')
-        console.log(node)
-
         return $li;
-
     }
 
     function updateTreeNode(data) {
+
+        console.log('data')
+        console.log(data)
+
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
-        data.forEach(person => {
-            $treeRoot.append(createTreeNode(person));
+        // Find root nodes (nodes with no parents)
+        const rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
+
+        rootNodes.forEach(person => {
+            const treeNode = createTreeNode(person);
+            if (treeNode) {
+                $treeRoot.append(treeNode);
+            }
         });
     }
 
@@ -209,7 +225,6 @@ $(document).ready(function() {
                     sex: sex,
                     image: sex === 'male' ? 'example1.jpg' : 'example.jpg'
                 }
-                console.log(newPerson)
                 lastUsedId = 1;
                 obj = newPerson;
                 data.push(newPerson);
@@ -220,6 +235,7 @@ $(document).ready(function() {
                 addNewForm = { ...formInterface };
                 return
             }
+            return;
         }
 
         let { type } = addNewForm;
@@ -227,8 +243,6 @@ $(document).ready(function() {
         if (name && birthDate && type) {
 
             let selectedPerson = data.find(person => person.name === $('#selected_person').text());
-
-            console.log(selectedPerson)
                 if (selectedPerson) {
                     let newPerson = {
                         id: lastUsedId + 1,
@@ -241,7 +255,6 @@ $(document).ready(function() {
                         dod: addNewForm.deathDate,
                     }
 
-                    console.log(type)
                     type = type.toLowerCase();
 
                     const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
@@ -262,7 +275,7 @@ $(document).ready(function() {
 
                     const $treeRoot = $('.tree > ul');
                     $treeRoot.empty();
-                    $treeRoot.append(updateTreeNode(data));
+                    updateTreeNode(data);
                     $('#myModal').modal('hide');
                 }
         }
@@ -279,8 +292,6 @@ $(document).ready(function() {
         }
         if (type === 'syn' || type === 'córka') {
             selectedPerson.chIds.push(id);
-            console.log('selectedPerson.chIds')
-            console.log(selectedPerson.chIds)
             if (selectedPerson.sex === 'male')
                 newPerson.fId = selectedPerson.id;
             else
@@ -293,6 +304,13 @@ $(document).ready(function() {
         if (type === 'mąż' || type === 'żona') {
             selectedPerson.pIds.push(id);
             newPerson.chIds.push(selectedPerson.id);
+        }
+        if(type === 'syn' || type === 'brat' || type === 'mąż' || type === 'tata') {
+            newPerson.sex = 'male'
+            newPerson.image = 'example1.jpg'
+        } else {
+            newPerson.sex = 'female'
+            newPerson.image = 'example.jpg'
         }
         return {selectedPerson, newPerson}
     }
@@ -352,13 +370,15 @@ $(document).ready(function() {
         const reader = new FileReader();
         reader.onload = function(e) {
             const data = JSON.parse(e.target.result);
-            obj = data;
-            const $treeRoot = $('.tree > ul');
-            $treeRoot.empty();
-            $treeRoot.append(createTreeNode(data));
+            obj = data.reduce((acc, item) => {
+                acc[item.id] = item;
+                return acc;
+            }, {});
+            updateTreeNode(Object.values(obj));
         };
         reader.readAsText(this.files[0]);
-    })
+    });
+
 
     $('#create-btn').on('click', function() {
         createNewMode = true;
