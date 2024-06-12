@@ -1,8 +1,8 @@
 var currentScale = 1;
 var formInterface = {
     type: null,
-    name: null,
-    birthDate: null,
+    name: 'name',
+    birthDate: new Date().toLocaleDateString('en-US'),
     deathDate: null,
     localization: null,
     pathToImage: null
@@ -14,9 +14,11 @@ let lastUsedId = 0;
 let obj;
 let data = []
 let createNewMode
-
 let itemsWithPartners = []
 let nodeCreatedFor = []
+let currentX = 0;
+let currentY = 0;
+
 
 $(document).ready(function() {
 
@@ -25,16 +27,18 @@ $(document).ready(function() {
             return null;
         }
 
+        hideLandingPage();
+
         if(nodeCreatedFor.includes(node.id)) {
             return;
         }
 
         if(node.pIds)
-        node.pIds.forEach(pId => {
-            if(nodeCreatedFor.includes(pId)) {
-                itemsWithPartners.push(node.id)
-            }
-        })
+            node.pIds.forEach(pId => {
+                if(nodeCreatedFor.includes(pId)) {
+                    itemsWithPartners.push(node.id)
+                }
+            })
 
         return createItem(node);
     }
@@ -47,9 +51,22 @@ $(document).ready(function() {
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
-        // Find root nodes (nodes with no parents)
+        data.forEach(item => {
+            console.log(item)
+        })
         let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
         console.log('rootNodes')
+        console.log(rootNodes)
+        rootNodes.forEach(person => {
+            if(person.pIds) {
+                person.pIds.forEach(pId => {
+                    if(data.some(p => (p.chIds || []).includes(pId))) {
+                        rootNodes = rootNodes.filter(p => p.id !== person.id);
+                    }
+                })
+            }
+        })
+        console.log('rootNodesWithoutPartnerParents')
         console.log(rootNodes)
 
         rootNodes.forEach(person => {
@@ -64,10 +81,8 @@ $(document).ready(function() {
         const $a = $('<a href="#" class="single-item"></a>').attr('id', node.id);
         const $containerDiv = $('<div class="container"></div>');
         $containerDiv.append(createLeftDiv(node.image), createRightDiv(node));
-
         $a.append($containerDiv).addClass(`${node.sex}-bg`);
         nodeCreatedFor.push(node.id);
-
         return $a;
     }
 
@@ -85,27 +100,29 @@ $(document).ready(function() {
             })
         }
 
-        if(node.id === 1 || node.id === 2) {
+        if(node) {
             const nodeChildrens = node.chIds;
-            nodeChildrens.forEach((child) => {
-                const children = data.filter(person => person.id === child)[0]
-                if(children.pIds) {
-                    children.pIds.forEach(childPartnerIds => {
-                        const partner = data.filter(person => person.id === childPartnerIds)[0]
-                        let $div2 = $('<div class="node"></div>');
-                        if(partner.fid && !nodeCreatedFor.includes(partner.fid)) {
-                            const father = data.filter(person => person.id === partner.fid)[0]
-                            $div2.append(generateTileOfPerson(father));
-                            $li.append($div2);
-                        }
-                        if(partner.mid && !nodeCreatedFor.includes(partner.mid)) {
-                            const mother = data.filter(person => person.id === partner.mid)[0]
-                            $div2.append(generateTileOfPerson(mother));
-                            $li.append($div2);
-                        }
-                    })
-                }
-            })
+            if (nodeChildrens && nodeChildrens.length > 0)
+                nodeChildrens.forEach((child) => {
+                    const children = data.filter(person => person.id === child)[0]
+                    if(children.pIds) {
+                        children.pIds.forEach(childPartnerIds => {
+                            const partner = data.filter(person => person.id === childPartnerIds)[0]
+                            let $div2 = $('<div class="node"></div>');
+
+                            if(partner.fid && !nodeCreatedFor.includes(partner.fid)) {
+                                const father = data.filter(person => person.id === partner.fid)[0]
+                                $div2.append(generateTileOfPerson(father));
+                                $li.append($div2);
+                            }
+                            if(partner.mid && !nodeCreatedFor.includes(partner.mid)) {
+                                const mother = data.filter(person => person.id === partner.mid)[0]
+                                $div2.append(generateTileOfPerson(mother));
+                                $li.append($div2);
+                            }
+                        })
+                    }
+                })
         }
 
 
@@ -126,6 +143,17 @@ $(document).ready(function() {
         }
 
         return $li;
+    }
+
+    function createTreeInTree(data, pId) {
+        const $treeRoot = $('<ul>');
+        data.forEach(person => {
+            const treeNode = '<li>' + person.id + '</li>';
+            if (treeNode) {
+                $treeRoot.append(treeNode);
+            }
+        });
+        return $treeRoot;
     }
 
     function createLeftDiv(image) {
@@ -193,12 +221,12 @@ $(document).ready(function() {
         listeners: {
             move(event) {
                 const target = event.target;
-                const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                currentX = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                currentY = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-                target.style.transform = `translate(${x}px, ${y}px) scale(${currentScale})`;
-                target.setAttribute('data-x', x);
-                target.setAttribute('data-y', y );
+                target.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
+                target.setAttribute('data-x', currentX);
+                target.setAttribute('data-y', currentY);
             }
         }
     });
@@ -265,10 +293,6 @@ $(document).ready(function() {
         }
     }
 
-    function validateField(selector, value) {
-        $(selector).toggleClass('border border-danger', !value);
-    }
-
     function handleCreateNewMode(name, birthDate) {
         const { sex } = addNewForm;
         validateField('#sex', sex);
@@ -321,30 +345,43 @@ $(document).ready(function() {
         validateField('#type', type);
 
         if (name && birthDate && type) {
-            let selectedPerson = data.find(person => person.name === $('#selected_person').text());
-            console.log('selectedPerson', selectedPerson)
+            type = type.toLowerCase();
+            let selectedPerson = findSelectedPerson();
             if (selectedPerson) {
-                let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate);
-                console.log('newPerson', newPerson)
+                let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate, addNewForm.sex);
                 const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
 
                 if (preparedData) {
                     selectedPerson = preparedData.selectedPerson;
                     newPerson = preparedData.newPerson;
-                    console.log('ttttttttttttttttttttttttttttttttt')
-                    console.log('selectedPerson', selectedPerson)
-                    console.log('newPerson', newPerson)
                 }
 
-                addChildrenIfNotExist(selectedPerson, newPerson.id);
+                if (!selectedPerson.fId && !selectedPerson.mId) {
+                    addChildrenIfNotExist(selectedPerson, newPerson.id);
+                }
+
+                handleParentRelationships(selectedPerson, type, newPerson);
 
                 if (data) {
-                    data.push(newPerson);
-                    lastUsedId++;
-                    refreshTree(data);
+                    if (!isDuplicate(newPerson)) {
+                        data.push(newPerson);
+                        lastUsedId++;
+                        resetAll();
+                        refreshTree(data);
+                    }
                 }
             }
         }
+    }
+
+    function validateField(selector, value) {
+        $(selector).toggleClass('border border-danger', !value);
+    }
+
+    function findSelectedPerson() {
+        let selectedPerson = data.find(person => person.name === $('#selected_person').text());
+        console.log('selectedPerson', selectedPerson);
+        return selectedPerson;
     }
 
     function createNewPersonForExistingMode(name, birthDate, deathDate, sex) {
@@ -361,45 +398,46 @@ $(document).ready(function() {
         };
     }
 
-    function addChildrenIfNotExist(selectedPerson, childId) {
-        if (!selectedPerson.chIds) {
-            selectedPerson.chIds = [];
-        }
-        if (!selectedPerson.chIds.includes(childId)) {
-            selectedPerson.chIds.push(childId);
-        }
-    }
-
-    const preparePerson = (selectedPerson, type, id, newPerson) => {
+    function preparePerson(selectedPerson, type, id, newPerson) {
         newPerson.chIds = newPerson.chIds || [];
         newPerson.pIds = newPerson.pIds || [];
 
-        type = type.toLowerCase();
-
-        if (type === 'mama') {
-            selectedPerson.mId = id;
-            newPerson.chIds.push(selectedPerson.id);
-        }
-        if (type === 'tata') {
-            selectedPerson.fId = id;
-            newPerson.chIds.push(selectedPerson.id);
-        }
-        if (type === 'syn' || type === 'córka') {
-            if(!selectedPerson.chIds)
-                selectedPerson.chIds = [];
-            selectedPerson.chIds.push(id);
-            if (selectedPerson.sex === 'male')
-                newPerson.fId = selectedPerson.id;
-            else
-                newPerson.mId = selectedPerson.id;
-        }
-        if (type === 'brat' || type === 'siostra') {
+        if (type === 'mama' || type === 'tata') {
+            addParent(selectedPerson, type, id, newPerson);
+        } else if (type === 'syn' || type === 'córka') {
+            addChild(selectedPerson, id, newPerson);
+        } else if (type === 'brat' || type === 'siostra') {
+            selectedPerson.sibIds = selectedPerson.sibIds || [];
             selectedPerson.sibIds.push(id);
-        }
-        if (type === 'mąż' || type === 'żona') {
+        } else if (type === 'mąż' || type === 'żona') {
             selectedPerson.pIds.push(id);
         }
 
+        setNewPersonAttributes(newPerson, type);
+
+        return { selectedPerson, newPerson };
+    }
+
+    function addParent(selectedPerson, type, id, newPerson) {
+        if (type === 'mama') {
+            selectedPerson.mId = id;
+        } else if (type === 'tata') {
+            selectedPerson.fId = id;
+        }
+        newPerson.chIds.push(selectedPerson.id);
+    }
+
+    function addChild(selectedPerson, id, newPerson) {
+        if (!selectedPerson.chIds) selectedPerson.chIds = [];
+        selectedPerson.chIds.push(id);
+        if (selectedPerson.sex === 'male') {
+            newPerson.fId = selectedPerson.id;
+        } else {
+            newPerson.mId = selectedPerson.id;
+        }
+    }
+
+    function setNewPersonAttributes(newPerson, type) {
         if (['syn', 'brat', 'mąż', 'tata'].includes(type)) {
             newPerson.sex = 'male';
             newPerson.image = 'example1.jpg';
@@ -407,9 +445,47 @@ $(document).ready(function() {
             newPerson.sex = 'female';
             newPerson.image = 'example.jpg';
         }
+    }
 
-        return { selectedPerson, newPerson };
-    };
+    function addChildrenIfNotExist(selectedPerson, childId) {
+        if (!selectedPerson.chIds) {
+            selectedPerson.chIds = [];
+        }
+        if (!selectedPerson.chIds.includes(childId)) {
+            selectedPerson.chIds.push(childId);
+        }
+        if(selectedPerson.pIds) {
+            selectedPerson.pIds.forEach(pId => {
+                const parent = data.find(person => person.id === pId);
+                if(parent && !parent.chIds.includes(childId)) {
+                    parent.chIds.push(childId);
+                }
+            })
+        }
+    }
+
+    function handleParentRelationships(selectedPerson, type, newPerson) {
+        let selectedPersonParent = data.find(person => person.id === selectedPerson.fId || person.id === selectedPerson.mId);
+
+        if (selectedPerson.fId && type === 'mama' && selectedPersonParent) {
+            console.log('selectedPerson', selectedPerson);
+            console.log('selectedPersonParent', selectedPersonParent);
+            selectedPersonParent.pIds.push(newPerson.id);
+            newPerson.pIds.push(selectedPersonParent.id);
+        }
+
+        if (selectedPerson.mId && type === 'tata' && selectedPersonParent) {
+            console.log('selectedPerson', selectedPerson);
+            console.log('selectedPersonParent', selectedPersonParent);
+            selectedPersonParent.pIds.push(newPerson.id);
+            newPerson.pIds.push(selectedPersonParent.id);
+        }
+    }
+
+    function isDuplicate(newPerson) {
+        return data.some(person => person.name === newPerson.name && person.dob === newPerson.dob);
+    }
+
 
     const findPerson = (node, name) => {
         if (node.name === name) {
@@ -426,30 +502,53 @@ $(document).ready(function() {
         return null;
     };
 
-
-
-    function resetTreePosition() {
+    function initializeTreePosition() {
         const $tree = $('.tree');
+        currentX = -window.innerWidth / 2;
+        currentY = 0;
         currentScale = 1;
-        $tree.attr('data-x', 0).attr('data-y', 0);
+
+        $tree.attr('data-x', currentX);
+        $tree.attr('data-y', currentY);
         $tree.css({
-            'transform': `translate(-100%, 0) scale(${currentScale})`,
+            'transform': `translate(${currentX}px, ${currentY}px) scale(${currentScale})`,
             'transform-origin': '50% 0'
         });
     }
 
+
+
+    function resetTreePosition() {
+        initializeTreePosition();
+    }
+
     function adjustScale(delta, originX = window.innerWidth / 2, originY = 0) {
         const $tree = $('.tree');
-        const x = parseFloat($tree.attr('data-x')) || 0;
-        const y = parseFloat($tree.attr('data-y')) || 0;
         currentScale = Math.max(0.1, currentScale + delta);
+
         $tree.css({
             'transform-origin': `${originX}px ${originY}px`,
-            'transform': `translate(${x}px, ${y}px) scale(${currentScale})`
+            'transform': `translate(${currentX}px, ${currentY}px) scale(${currentScale})`
         });
     }
 
+    function resetAll() {
+        createNewMode = false;
+        itemsWithPartners = [];
+        nodeCreatedFor = [];
+        resetForm();
+    }
+
+    function hideLandingPage() {
+        $('.landing-page').css('display', 'none');
+        $('.buttons').css('display', 'flex');
+    }
+
     $('#fileInput').on('click', function() {
+        $('#file').trigger('click');
+    })
+
+    $('#fileInput-big').on('click', function() {
         $('#file').trigger('click');
     })
 
@@ -467,7 +566,20 @@ $(document).ready(function() {
     });
 
 
-    $('#create-btn').on('click', function() {
+    $('#create-btn',).on('click', function() {
+        data = [];
+        nodeCreatedFor = [];
+        createNewMode = true;
+        addNewForm = { ...formInterface };
+        $('#typeSelect').css('display', 'none');
+        $('#sexSelect').css('display', 'block');
+        $('#myModal').modal('show');
+        $('#selected_person').text('root');
+    });
+
+    $('#create-btn-big',).on('click', function() {
+        data = [];
+        nodeCreatedFor = [];
         createNewMode = true;
         addNewForm = { ...formInterface };
         $('#typeSelect').css('display', 'none');

@@ -27,10 +27,8 @@ body {
 .tree {
     width: 100%;
     height: 100%;
-    cursor: grab; /
+    cursor: grab;
     position: absolute;
-    left: 50%;
-
 }
 
 .tree ul {
@@ -247,21 +245,51 @@ body {
 }
 
 .buttons {
+    display: none;
     max-width: 100vw;
     z-index: 999;
     top: 0;
     right: 0;
     padding: 5px;
     position: absolute;
-    display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    button {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 5px;
-    }
+}
+.buttons button, .center-buttons button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
+
+.center-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.empty {
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+    height: 100%;
+    width: 100%;
+}
+.empty-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    height: 100%;
+    width: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.29) 60%, transparent);
+    aspect-ratio: 2/1;
+    border-radius: 12px;
 }
 
 .modal-content {
