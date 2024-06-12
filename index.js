@@ -103,24 +103,21 @@ $(document).ready(function() {
                     if(children.pIds) {
                         children.pIds.forEach(childPartnerIds => {
                             const partner = data.filter(person => person.id === childPartnerIds)[0]
-                            let $div2 = $('<div class="node"></div>');
+                            let $div2 = $('<div class="node div2"></div>');
+                            //udało się dodać rodziców partnera w lini z rodzicami
 
                             if(partner.fid && !nodeCreatedFor.includes(partner.fid)) {
                                 const father = data.filter(person => person.id === partner.fid)[0]
-                                $div2.append(generateTileOfPerson(father));
-                                $li.append($div2);
+                                $div.append(generateTileOfPerson(father));
                             }
                             if(partner.mid && !nodeCreatedFor.includes(partner.mid)) {
                                 const mother = data.filter(person => person.id === partner.mid)[0]
-                                $div2.append(generateTileOfPerson(mother));
-                                $li.append($div2);
+                                $div.append(generateTileOfPerson(mother));
                             }
                         })
-                    }
-                })
+                    }})
             }
         }
-
 
         $div.append(itemHTML);
         $li.append($div);
