@@ -1,7 +1,7 @@
 var currentScale = 1;
 var formInterface = {
     type: null,
-    name: 'name',
+    name: null,
     birthDate: new Date().toLocaleDateString('en-US'),
     deathDate: null,
     localization: null,
@@ -23,6 +23,7 @@ let currentY = 0;
 $(document).ready(function() {
 
     function createTreeNode(node) {
+        console.log('TWORZENIE WĘZŁA')
         if (!node) {
             return null;
         }
@@ -44,7 +45,7 @@ $(document).ready(function() {
     }
 
     function updateTreeNode(data) {
-
+        console.log('AKTUALIZACJA DRZEWA')
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
@@ -68,6 +69,7 @@ $(document).ready(function() {
     }
 
     const generateTileOfPerson = (node) => {
+        console.log('TWORZENIE KAFELKA')
         const $a = $('<a href="#" class="single-item"></a>').attr('id', node.id);
         const $containerDiv = $('<div class="container"></div>');
         $containerDiv.append(createLeftDiv(node.image), createRightDiv(node));
@@ -77,12 +79,14 @@ $(document).ready(function() {
     }
 
     function createItem(node) {
+        console.log('TWORZENIE ELEMENTU')
         const $li = $('<li>');
         const $div = $('<div class="node"></div>');
 
         let itemHTML = generateTileOfPerson(node)
 
         if(node.pIds) {
+            console.log('MAMY PARTNERÓW')
             node.pIds.forEach(pId => {
                 $div.append(
                     data.filter(person => person.id === pId).map(person => generateTileOfPerson(person))
@@ -92,7 +96,8 @@ $(document).ready(function() {
 
         if(node) {
             const nodeChildrens = node.chIds;
-            if (nodeChildrens && nodeChildrens.length > 0)
+            if (nodeChildrens && nodeChildrens.length > 0){
+                console.log('MAMY DZIECI')
                 nodeChildrens.forEach((child) => {
                     const children = data.filter(person => person.id === child)[0]
                     if(children.pIds) {
@@ -113,15 +118,12 @@ $(document).ready(function() {
                         })
                     }
                 })
+            }
         }
 
 
         $div.append(itemHTML);
         $li.append($div);
-
-        if (node.pIds) {
-            handlePartners(node);
-        }
 
         if (node.chIds && node.chIds.length > 0) {
             $li.append(createChildNodes(node.chIds));
@@ -169,7 +171,10 @@ $(document).ready(function() {
         }
 
         const $addButton = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
-        $addButton.on('click', () => addNewPerson(node));
+        $addButton.on('click', () => {
+            addNewPerson(node);
+            resetForm()
+        });
         $name.append($addButton);
 
         $rightDiv.append($name, $rightContent);
@@ -181,6 +186,7 @@ $(document).ready(function() {
     }
 
     function handlePartners(node) {
+        console.log('OBSŁUGA PARTNERÓW')
         const partner = data.filter(person => node.pIds.includes(person.id));
     }
 
@@ -197,6 +203,7 @@ $(document).ready(function() {
 
 
     function addNewPerson(node) {
+        addNewForm = formInterface
         createNewMode = false;
         $('#typeSelect').css('display', 'block');
         $('#sexSelect').css('display', 'none');
@@ -282,6 +289,7 @@ $(document).ready(function() {
     }
 
     function handleCreateNewMode(name, birthDate) {
+        console.log('TWORZENIE NOWEJ RODZINY')
         const { sex } = addNewForm;
         validateField('#sex', sex);
 
@@ -289,12 +297,14 @@ $(document).ready(function() {
             let newPerson = createNewPersonObject(sex, name, birthDate, addNewForm.deathDate);
             lastUsedId = 1;
             data.push(newPerson);
+            console.log('Dane', data)
             refreshTree(data);
-            resetForm();
+            resetForm(); // Ensure form resets after adding new person
         }
     }
 
     function createNewPersonObject(sex, name, birthDate, deathDate) {
+        console.log('Tworzenie nowej osoby')
         return {
             id: 1,
             pIds: [],
@@ -310,6 +320,7 @@ $(document).ready(function() {
     }
 
     function refreshTree(data) {
+        console.log('ODŚWIEŻANIE DRZEWA')
         nodeCreatedFor = [];
         itemsWithPartners = [];
         obj = data.reduce((acc, item) => {
@@ -320,9 +331,29 @@ $(document).ready(function() {
         $('#myModal').modal('hide');
     }
 
-    function resetForm() {
-        addNewForm = { ...formInterface };
+    function checkParentExistence(selectedPerson, type) {
+        if (type === 'tata' && selectedPerson.fId) {
+            alert('Selected person already has a father.');
+            return false;
+        }
+        if (type === 'mama' && selectedPerson.mId) {
+            alert('Selected person already has a mother.');
+            return false;
+        }
+        return true;
     }
+
+    function resetForm() {
+        console.log('RESETOWANIE FORMULARZA')
+        addNewForm = { ...formInterface };
+        $('#name').val('');
+        $('#birthDate').val(new Date().toLocaleDateString('en-US'));
+        $('#deathDate').val('');
+        $('#sex').val('');
+        $('#type').val('');
+        $('#localization').val('');
+    }
+
 
     function handleExistingMode(name, birthDate) {
         lastUsedId = data.length;
@@ -330,23 +361,39 @@ $(document).ready(function() {
         let { type } = addNewForm;
         validateField('#type', type);
 
+        console.log('-------')
+        console.log('-------')
+        console.log('Dane formularza', addNewForm)
+        console.log('-------')
+        console.log('-------')
+
+
         if (name && birthDate && type) {
             type = type.toLowerCase();
             let selectedPerson = findSelectedPerson();
             if (selectedPerson) {
+                console.log('Wybrana osoba', selectedPerson)
+                if (!checkParentExistence(selectedPerson, type)) {
+                    return;
+                }
+
                 let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate, addNewForm.sex);
                 const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
+
+                console.log('Przygotowane dane', preparedData)
 
                 if (preparedData) {
                     selectedPerson = preparedData.selectedPerson;
                     newPerson = preparedData.newPerson;
                 }
 
+                if(selectedPerson.fId || selectedPerson.mId) {
+                    handleParentRelationships(selectedPerson, type, newPerson);
+                }
+
                 if (!selectedPerson.fId && !selectedPerson.mId) {
                     addChildrenIfNotExist(selectedPerson, newPerson.id);
                 }
-
-                handleParentRelationships(selectedPerson, type, newPerson);
 
                 if (data) {
                     if (!isDuplicate(newPerson)) {
@@ -357,6 +404,7 @@ $(document).ready(function() {
                     }
                 }
             }
+            resetForm(); // Ensure form resets after adding existing person
         }
     }
 
@@ -449,16 +497,17 @@ $(document).ready(function() {
     }
 
     function handleParentRelationships(selectedPerson, type, newPerson) {
-        let selectedPersonParent = data.find(person => person.id === selectedPerson.fId || person.id === selectedPerson.mId);
+        const isAddingMother = type === 'mama';
+        const isAddingFather = type === 'tata';
 
-        if (selectedPerson.fId && type === 'mama' && selectedPersonParent) {
-            selectedPersonParent.pIds.push(newPerson.id);
-            newPerson.pIds.push(selectedPersonParent.id);
-        }
+        if (isAddingMother || isAddingFather) {
+            const parentType = isAddingMother ? 'fId' : 'mId';
+            const selectedPersonParent = data.find(person => person.id === selectedPerson[parentType]);
 
-        if (selectedPerson.mId && type === 'tata' && selectedPersonParent) {
-            selectedPersonParent.pIds.push(newPerson.id);
-            newPerson.pIds.push(selectedPersonParent.id);
+            if (selectedPersonParent) {
+                selectedPersonParent.pIds.push(newPerson.id);
+                newPerson.pIds.push(selectedPersonParent.id);
+            }
         }
     }
 
