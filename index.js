@@ -45,18 +45,10 @@ $(document).ready(function() {
 
     function updateTreeNode(data) {
 
-        console.log('data')
-        console.log(data)
-
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
-        data.forEach(item => {
-            console.log(item)
-        })
         let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
-        console.log('rootNodes')
-        console.log(rootNodes)
         rootNodes.forEach(person => {
             if(person.pIds) {
                 person.pIds.forEach(pId => {
@@ -66,8 +58,6 @@ $(document).ready(function() {
                 })
             }
         })
-        console.log('rootNodesWithoutPartnerParents')
-        console.log(rootNodes)
 
         rootNodes.forEach(person => {
             const treeNode = createTreeNode(person);
@@ -191,9 +181,7 @@ $(document).ready(function() {
     }
 
     function handlePartners(node) {
-        console.log('test');
         const partner = data.filter(person => node.pIds.includes(person.id));
-        console.log('partner', partner);
     }
 
     function createChildNodes(ids) {
@@ -337,9 +325,7 @@ $(document).ready(function() {
     }
 
     function handleExistingMode(name, birthDate) {
-        console.log('DODAJE');
         lastUsedId = data.length;
-        console.log('lastUsedId', lastUsedId);
 
         let { type } = addNewForm;
         validateField('#type', type);
@@ -379,9 +365,7 @@ $(document).ready(function() {
     }
 
     function findSelectedPerson() {
-        let selectedPerson = data.find(person => person.name === $('#selected_person').text());
-        console.log('selectedPerson', selectedPerson);
-        return selectedPerson;
+        return data.find(person => person.name === $('#selected_person').text());
     }
 
     function createNewPersonForExistingMode(name, birthDate, deathDate, sex) {
@@ -468,15 +452,11 @@ $(document).ready(function() {
         let selectedPersonParent = data.find(person => person.id === selectedPerson.fId || person.id === selectedPerson.mId);
 
         if (selectedPerson.fId && type === 'mama' && selectedPersonParent) {
-            console.log('selectedPerson', selectedPerson);
-            console.log('selectedPersonParent', selectedPersonParent);
             selectedPersonParent.pIds.push(newPerson.id);
             newPerson.pIds.push(selectedPersonParent.id);
         }
 
         if (selectedPerson.mId && type === 'tata' && selectedPersonParent) {
-            console.log('selectedPerson', selectedPerson);
-            console.log('selectedPersonParent', selectedPersonParent);
             selectedPersonParent.pIds.push(newPerson.id);
             newPerson.pIds.push(selectedPersonParent.id);
         }
