@@ -15,6 +15,7 @@ let obj;
 let data = []
 let createNewMode
 
+let itemsWithPartners = []
 let nodeCreatedFor = []
 
 $(document).ready(function() {
@@ -28,33 +29,14 @@ $(document).ready(function() {
             return;
         }
 
-        //do usuniecia
         if(node.pIds)
         node.pIds.forEach(pId => {
             if(nodeCreatedFor.includes(pId)) {
-                console.log(node.id + ' +++ ' + pId)
+                itemsWithPartners.push(node.id)
             }
         })
-        //
 
-
-        //create sopuse div
-
-        let $spouseDiv;
-        if (node.pIds && node.pIds.some(pId => nodeCreatedFor.includes(pId))) {
-            //create partners div
-            $spouseDiv = $('<div class="spouse"></div>');
-            node.pIds.forEach(pId => {
-                const pNode = obj[pId];
-                if (pNode) {
-                    $spouseDiv.append(createPartnerItem(node));
-                }
-            });
-        } else {
-            //create single item
-            return createItem(node);
-        }
-         return $spouseDiv;
+        return createItem(node);
     }
 
     function updateTreeNode(data) {
@@ -67,6 +49,8 @@ $(document).ready(function() {
 
         // Find root nodes (nodes with no parents)
         let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
+        console.log('rootNodes')
+        console.log(rootNodes)
 
         rootNodes.forEach(person => {
             const treeNode = createTreeNode(person);
@@ -76,134 +60,125 @@ $(document).ready(function() {
         });
     }
 
+    const generateTileOfPerson = (node) => {
+        const $a = $('<a href="#" class="single-item"></a>').attr('id', node.id);
+        const $containerDiv = $('<div class="container"></div>');
+        $containerDiv.append(createLeftDiv(node.image), createRightDiv(node));
+
+        $a.append($containerDiv).addClass(`${node.sex}-bg`);
+        nodeCreatedFor.push(node.id);
+
+        return $a;
+    }
+
     function createItem(node) {
         const $li = $('<li>');
-        const $a = $('<a href="#"></a>');
-        const $leftDiv = $('<div class="left"></div>');
-        const $img = $('<img>', { src: node.image, alt: '' });
-        $leftDiv.append($img);
+        const $div = $('<div class="node"></div>');
 
-        const $rightDiv = $('<div class="right"></div>');
-        const $name = $('<div>', { class: 'person_name', text: node.name });
+        let itemHTML = generateTileOfPerson(node)
 
-        const $rightContent = $('<div class="right_content"></div>');
-        if (node.dob || node.dod) {
-            $rightDiv.append($rightContent);
-
-            if (node.dob) {
-                const $dob = $('<div class="birth_date"><span><i class="bi bi-person-fill"></i> ur.</span> <span class="value"></span></div>');
-                $dob.find('.value').text(node.dob);
-                $rightContent.append($dob);
-            }
-
-            if (node.dod) {
-                const $dod = $('<div class="death_date"><span><i class="bi bi-file-text"></i> zm.</span> <span class="value"></span></div>');
-                $dod.find('.value').text(node.dod);
-                $rightContent.append($dod);
-            }
+        if(node.pIds) {
+            node.pIds.forEach(pId => {
+                $div.append(
+                    data.filter(person => person.id === pId).map(person => generateTileOfPerson(person))
+                )
+            })
         }
 
-        $rightDiv.append($name, $rightContent);
-
-        const $containerDiv = $('<div class="container"></div>');
-        const $addButton = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
-        $addButton.on('click', () => {
-            addNewPerson(node);
-        });
-        $name.append($addButton);
-
-        $containerDiv.append($leftDiv, $rightDiv);
-        $a.append($containerDiv);
-        $li.append($a);
-
-        if (node.sex === 'male') {
-            $a.addClass('male-bg');
-        } else if (node.sex === 'female') {
-            $a.addClass('female-bg');
-        }
-
-        const createChildNodes = (ids) => {
-            const $ul = $('<ul>');
-            ids.forEach(chId => {
-                const chNode = obj[chId];
-                if (chNode) {
-                    $ul.append(createTreeNode(chNode));
+        if(node.id === 1 || node.id === 2) {
+            const nodeChildrens = node.chIds;
+            nodeChildrens.forEach((child) => {
+                const children = data.filter(person => person.id === child)[0]
+                if(children.pIds) {
+                    children.pIds.forEach(childPartnerIds => {
+                        const partner = data.filter(person => person.id === childPartnerIds)[0]
+                        let $div2 = $('<div class="node"></div>');
+                        if(partner.fid && !nodeCreatedFor.includes(partner.fid)) {
+                            const father = data.filter(person => person.id === partner.fid)[0]
+                            $div2.append(generateTileOfPerson(father));
+                            $li.append($div2);
+                        }
+                        if(partner.mid && !nodeCreatedFor.includes(partner.mid)) {
+                            const mother = data.filter(person => person.id === partner.mid)[0]
+                            $div2.append(generateTileOfPerson(mother));
+                            $li.append($div2);
+                        }
+                    })
                 }
-            });
-            return $ul;
-        };
+            })
+        }
+
+
+        $div.append(itemHTML);
+        $li.append($div);
+
+        if (node.pIds) {
+            handlePartners(node);
+        }
 
         if (node.chIds && node.chIds.length > 0) {
             $li.append(createChildNodes(node.chIds));
         }
+        nodeCreatedFor.push(node.id);
 
-        if (node.mId) {
-            const $ul = $('<ul>');
-            const pNode = obj[node.mId];
-            if (pNode) {
-                $ul.append(createTreeNode(pNode));
-                $li.append($ul);
-            }
+        if (itemsWithPartners.includes(node.id)) {
+            return;
         }
-
-        if (node.fId) {
-            const $ul = $('<ul>');
-            const pNode = obj[node.fId];
-            if (pNode) {
-                $ul.append(createTreeNode(pNode));
-                $li.append($ul);
-            }
-        }
-        nodeCreatedFor.push(node.id)
 
         return $li;
-
     }
 
-    function createPartnerItem(node) {
-        console.log('createPartnerItem')
-        console.log(node)
-        const $li_partner = $('<li>');
-        const $a_partner = $('<a href="#"></a>');
-        const $leftDiv_partner = $('<div class="left"></div>');
-        const $img_partner = $('<img>', { src: node.image, alt: '' });
-        $leftDiv_partner.append($img_partner);
+    function createLeftDiv(image) {
+        const $leftDiv = $('<div class="left"></div>');
+        const $img = $('<img>', { src: image, alt: '' });
+        $leftDiv.append($img);
+        return $leftDiv;
+    }
 
-        const $rightDiv_partner = $('<div class="right"></div>');
-        const $name_partner = $('<div>', { class: 'person_name', text: node.name });
+    function createRightDiv(node) {
+        const $rightDiv = $('<div class="right"></div>');
+        const $name = $('<div>', { class: 'person_name', text: node.name + node.id });
+        const $rightContent = $('<div class="right_content"></div>');
 
-        const $rightContent_partner = $('<div class="right_content"></div>');
         if (node.dob || node.dod) {
-            $rightDiv_partner.append($rightContent_partner);
-
             if (node.dob) {
-                const $dob_partner = $('<div class="birth_date"><span><i class="bi bi-person-fill"></i> ur.</span> <span class="value"></span></div>');
-                $dob_partner.find('.value').text(node.dob);
-                $rightContent_partner.append($dob_partner);
+                $rightContent.append(createDateDiv('birth_date', 'bi bi-person-fill', 'ur.', node.dob));
             }
-
             if (node.dod) {
-                const $dod_partner = $('<div class="death_date"><span><i class="bi bi-file-text"></i> zm.</span> <span class="value"></span></div>');
-                $dod_partner.find('.value').text(node.dod);
-                $rightContent_partner.append($dod_partner);
+                $rightContent.append(createDateDiv('death_date', 'bi bi-file-text', 'zm.', node.dod));
             }
+            $rightDiv.append($rightContent);
         }
 
-        $rightDiv_partner.append($name_partner, $rightContent_partner);
+        const $addButton = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
+        $addButton.on('click', () => addNewPerson(node));
+        $name.append($addButton);
 
-        const $containerDiv_partner = $('<div class="container"></div>');
-        const $addButton_partner = $('<button class="btn btn-outline-info add_button"><i class="bi bi-plus h4"></i></button>');
-        $addButton_partner.on('click', () => {
-            addNewPerson(node);
-        });
-        $name_partner.append($addButton_partner);
-
-        $containerDiv_partner.append($leftDiv_partner, $rightDiv_partner);
-        $a_partner.append($containerDiv_partner);
-        $li_partner.append($a_partner);
-
-        return $li_partner;
+        $rightDiv.append($name, $rightContent);
+        return $rightDiv;
     }
+
+    function createDateDiv(className, iconClass, labelText, date) {
+        return $(`<div class="${className}"><span><i class="${iconClass}"></i> ${labelText}</span> <span class="value">${date}</span></div>`);
+    }
+
+    function handlePartners(node) {
+        console.log('test');
+        const partner = data.filter(person => node.pIds.includes(person.id));
+        console.log('partner', partner);
+    }
+
+    function createChildNodes(ids) {
+        const $ul = $('<ul>');
+        ids.forEach(chId => {
+            const chNode = obj[chId];
+            if (chNode) {
+                $ul.append(createItem(chNode));
+            }
+        });
+        return $ul;
+    }
+
 
     function addNewPerson(node) {
         createNewMode = false;
@@ -212,7 +187,6 @@ $(document).ready(function() {
         $('#myModal').modal('show');
         $('#selected_person').text(node.name);
     }
-
 
     interact('.tree').draggable({
         inertia: true,
@@ -281,82 +255,127 @@ $(document).ready(function() {
 
     function validateAndSubmitForm() {
         const { name, birthDate } = addNewForm;
-        $('#name').toggleClass('border border-danger', !name);
-        $('#birthDate').toggleClass('border border-danger', !birthDate);
+        validateField('#name', name);
+        validateField('#birthDate', birthDate);
 
-        if(createNewMode) {
-            const { sex } = addNewForm;
-            $('#sex').toggleClass('border border-danger', !sex);
-            if (name && birthDate && sex) {
-                let newPerson = {
-                    id: 1,
-                    pIds: [],
-                    mId: null,
-                    fId: null,
-                    chIds: [],
-                    name: addNewForm.name,
-                    dob: addNewForm.birthDate,
-                    dod: addNewForm.deathDate,
-                    sex: sex,
-                    image: sex === 'male' ? 'example1.jpg' : 'example.jpg'
-                }
-                lastUsedId = 1;
-                obj = newPerson;
-                data.push(newPerson);
-                const $treeRoot = $('.tree > ul');
-                $treeRoot.empty();
-                $treeRoot.append(createTreeNode(obj));
-                $('#myModal').modal('hide');
-                addNewForm = { ...formInterface };
-                return
-            }
-            return;
-        }
-
-        let { type } = addNewForm;
-        $('#type').toggleClass('border border-danger', !type);
-        if (name && birthDate && type) {
-
-            let selectedPerson = data.find(person => person.name === $('#selected_person').text());
-                if (selectedPerson) {
-                    let newPerson = {
-                        id: lastUsedId + 1,
-                        pIds: [],
-                        mId: null,
-                        fId: null,
-                        chIds: [],
-                        name: addNewForm.name,
-                        dob: addNewForm.birthDate,
-                        dod: addNewForm.deathDate,
-                    }
-
-                    type = type.toLowerCase();
-
-                    const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
-
-                    selectedPerson = preparedData.selectedPerson;
-                    newPerson = preparedData.newPerson;
-
-                    console.log('selectedPerson')
-                    console.log(selectedPerson)
-
-                    console.log('newPerson')
-                    console.log(newPerson)
-
-                    data.push(newPerson);
-                    console.log(data)
-
-                   lastUsedId++;
-
-                    const $treeRoot = $('.tree > ul');
-                    $treeRoot.empty();
-                    updateTreeNode(data);
-                    $('#myModal').modal('hide');
-                }
+        if (createNewMode) {
+            handleCreateNewMode(name, birthDate);
+        } else {
+            handleExistingMode(name, birthDate);
         }
     }
 
-    const preparePerson = (selectedPerson, type, id,newPerson) => {
+    function validateField(selector, value) {
+        $(selector).toggleClass('border border-danger', !value);
+    }
+
+    function handleCreateNewMode(name, birthDate) {
+        const { sex } = addNewForm;
+        validateField('#sex', sex);
+
+        if (name && birthDate && sex) {
+            let newPerson = createNewPersonObject(sex, name, birthDate, addNewForm.deathDate);
+            lastUsedId = 1;
+            data.push(newPerson);
+            refreshTree(data);
+            resetForm();
+        }
+    }
+
+    function createNewPersonObject(sex, name, birthDate, deathDate) {
+        return {
+            id: 1,
+            pIds: [],
+            mId: null,
+            fId: null,
+            chIds: [],
+            name: name,
+            dob: birthDate,
+            dod: deathDate,
+            sex: sex,
+            image: sex === 'male' ? 'example1.jpg' : 'example.jpg'
+        };
+    }
+
+    function refreshTree(data) {
+        nodeCreatedFor = [];
+        itemsWithPartners = [];
+        obj = data.reduce((acc, item) => {
+            acc[item.id] = item;
+            return acc;
+        }, {});
+        updateTreeNode(Object.values(obj));
+        $('#myModal').modal('hide');
+    }
+
+    function resetForm() {
+        addNewForm = { ...formInterface };
+    }
+
+    function handleExistingMode(name, birthDate) {
+        console.log('DODAJE');
+        lastUsedId = data.length;
+        console.log('lastUsedId', lastUsedId);
+
+        let { type } = addNewForm;
+        validateField('#type', type);
+
+        if (name && birthDate && type) {
+            let selectedPerson = data.find(person => person.name === $('#selected_person').text());
+            console.log('selectedPerson', selectedPerson)
+            if (selectedPerson) {
+                let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate);
+                console.log('newPerson', newPerson)
+                const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
+
+                if (preparedData) {
+                    selectedPerson = preparedData.selectedPerson;
+                    newPerson = preparedData.newPerson;
+                    console.log('ttttttttttttttttttttttttttttttttt')
+                    console.log('selectedPerson', selectedPerson)
+                    console.log('newPerson', newPerson)
+                }
+
+                addChildrenIfNotExist(selectedPerson, newPerson.id);
+
+                if (data) {
+                    data.push(newPerson);
+                    lastUsedId++;
+                    refreshTree(data);
+                }
+            }
+        }
+    }
+
+    function createNewPersonForExistingMode(name, birthDate, deathDate, sex) {
+        return {
+            id: lastUsedId + 1,
+            pIds: [],
+            mId: null,
+            fId: null,
+            chIds: [],
+            name: name,
+            sex: sex,
+            dob: birthDate,
+            dod: deathDate
+        };
+    }
+
+    function addChildrenIfNotExist(selectedPerson, childId) {
+        if (!selectedPerson.chIds) {
+            selectedPerson.chIds = [];
+        }
+        if (!selectedPerson.chIds.includes(childId)) {
+            selectedPerson.chIds.push(childId);
+        }
+    }
+
+    const preparePerson = (selectedPerson, type, id, newPerson) => {
+        newPerson.chIds = newPerson.chIds || [];
+        newPerson.pIds = newPerson.pIds || [];
+
+        type = type.toLowerCase();
+
         if (type === 'mama') {
             selectedPerson.mId = id;
             newPerson.chIds.push(selectedPerson.id);
@@ -366,6 +385,8 @@ $(document).ready(function() {
             newPerson.chIds.push(selectedPerson.id);
         }
         if (type === 'syn' || type === 'córka') {
+            if(!selectedPerson.chIds)
+                selectedPerson.chIds = [];
             selectedPerson.chIds.push(id);
             if (selectedPerson.sex === 'male')
                 newPerson.fId = selectedPerson.id;
@@ -373,22 +394,22 @@ $(document).ready(function() {
                 newPerson.mId = selectedPerson.id;
         }
         if (type === 'brat' || type === 'siostra') {
-            selectedPerson.chIds.push(id);
-            newPerson.sibIds.push(selectedPerson.id);
+            selectedPerson.sibIds.push(id);
         }
         if (type === 'mąż' || type === 'żona') {
             selectedPerson.pIds.push(id);
-            newPerson.chIds.push(selectedPerson.id);
         }
-        if(type === 'syn' || type === 'brat' || type === 'mąż' || type === 'tata') {
-            newPerson.sex = 'male'
-            newPerson.image = 'example1.jpg'
+
+        if (['syn', 'brat', 'mąż', 'tata'].includes(type)) {
+            newPerson.sex = 'male';
+            newPerson.image = 'example1.jpg';
         } else {
-            newPerson.sex = 'female'
-            newPerson.image = 'example.jpg'
+            newPerson.sex = 'female';
+            newPerson.image = 'example.jpg';
         }
-        return {selectedPerson, newPerson}
-    }
+
+        return { selectedPerson, newPerson };
+    };
 
     const findPerson = (node, name) => {
         if (node.name === name) {
@@ -405,16 +426,7 @@ $(document).ready(function() {
         return null;
     };
 
-    function preparePersonData(data) {
-        const person = {
-            name: data.name,
-            dob: data.birthDate,
-            dod: data.deathDate ? data.deathDate : null,
-            image: data.type.toLowerCase() === 'tata' || data.type.toLowerCase() === 'dziadek' || data.type.toLowerCase() === 'syn' || data.type.toLowerCase() === 'mąż' || data.type.toLowerCase() === 'brat' ? 'example1.jpg' : 'example.jpg',
-            sex: data.type.toLowerCase() === 'tata' || data.type.toLowerCase() === 'dziadek' || data.type.toLowerCase() === 'syn' || data.type.toLowerCase() === 'mąż' || data.type.toLowerCase() === 'brat' ? 'male' : 'female'
-        }
-        return person;
-    }
+
 
     function resetTreePosition() {
         const $tree = $('.tree');
@@ -444,7 +456,7 @@ $(document).ready(function() {
     $('#file').on('change', function() {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const data = JSON.parse(e.target.result);
+            data = JSON.parse(e.target.result);
             obj = data.reduce((acc, item) => {
                 acc[item.id] = item;
                 return acc;
