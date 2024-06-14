@@ -21,7 +21,6 @@ let currentY = 0;
 
 
 $(document).ready(function() {
-
     function createTreeNode(node) {
         console.log('TWORZENIE WĘZŁA')
         if (!node) {
@@ -66,7 +65,155 @@ $(document).ready(function() {
                 $treeRoot.append(treeNode);
             }
         });
+        let connections = {}
+        data.forEach(person => {
+            connections[person.id] = person.chIds || []
+        })
+
+        for (const connectionsKey in connections) {
+            const personElement = document.getElementById(connectionsKey)
+            connections[connectionsKey].forEach(connection => {
+                const activePersonElement = document.getElementById(connection)
+                setTimeout(() => {
+                    createConnection(personElement, activePersonElement, connection, connectionsKey)
+                }, 100)
+            })
+        }
+        console.log('Połączeqwenia', allConnections)
+
+        createPartnersConnections(data)
     }
+
+    const allConnections = []
+    const createConnection = (personElement, activePersonElement ,connection, connectionFrom) => {
+        console.log('TWORZENIE POŁĄCZENIA');
+        console.log(personElement.getBoundingClientRect());
+        console.log(activePersonElement.getBoundingClientRect());
+        console.log(connection, connectionFrom)
+
+        let personFrom = data.find(data => data.id === parseInt(connectionFrom))
+        let personTo = data.find(data => data.id === parseInt(connection))
+
+
+        const personElementRect = personElement.getBoundingClientRect();
+        const activePersonElementRect = activePersonElement.getBoundingClientRect();
+
+        const HTMLElement = document.createElement('div');
+
+        //check if exist elements with class ${connection}
+
+        HTMLElement.classList.add(`${connection}-${connectionFrom}`);
+
+        const startX = personElementRect.left + personElementRect.width / 2;
+        const startY = personElementRect.top + personElementRect.height;
+        const endX = activePersonElementRect.left + activePersonElementRect.width / 2;
+        const endY = activePersonElementRect.top + activePersonElementRect.height / 2;
+
+        const width = Math.abs(endX - startX);
+        const height = Math.abs(endY - startY);
+
+        HTMLElement.style.position = 'absolute';
+        HTMLElement.style.left = `${Math.min(startX, endX)}px`;
+        HTMLElement.style.top = `${startY}px`;
+        HTMLElement.style.width = `${width}px`;
+        HTMLElement.style.height = `${height/10}px`;
+
+        let createdElementClassName = '';
+
+        if(personElementRect.left > activePersonElementRect.left) {
+            createdElementClassName = 'line-div-left';
+        } else {
+            createdElementClassName = 'line-div-right';
+        }
+
+        if(personFrom.chIds && personFrom.chIds.includes(personTo.id)  && personFrom.id === 7) {
+            createdElementClassName = 'line-div-both';
+        }
+
+        HTMLElement.classList.add(createdElementClassName)
+
+        const treeContainer = document.querySelector('.tree');
+        let isDuplicateFromParent = allConnections.some(connection => connection.to === personTo.id)
+
+        if(isDuplicateFromParent) {
+            treeContainer.appendChild(HTMLElement);
+        }
+
+        allConnections.push({
+            from: parseInt(connectionFrom),
+            to: parseInt(connection)
+        })
+
+    };
+    const createPartnersConnections = (data) => {
+        let partners = data.filter(person => person.pIds)
+        let partnersConnections = []
+        partners.forEach(person => {
+            if (person.pIds) {
+                partners.forEach(partner => {
+                        if (person.pIds && person.pIds.includes(partner.id)) {
+                            if(partnersConnections.some(connection => connection.person.id === person.id && connection.partner.id === partner.id || connection.person.id === partner.id && connection.partner.id === person.id)) {
+                                return;
+                            }
+                            partnersConnections.push({
+                                person: person,
+                                partner: partner
+                            })
+                            }
+
+                    }
+                )
+            }
+        })
+        let itemsCloserToRight = []
+
+        partnersConnections.forEach(connection => {
+            const personElement = document.getElementById(connection.person.id)
+            const partnerElement = document.getElementById(connection.partner.id)
+
+            itemsCloserToRight.push(findItemCloserToLeft(personElement, partnerElement))
+        })
+
+        console.log('ITEMS CLOSER TO LEFT', itemsCloserToRight)
+
+        itemsCloserToRight.forEach(item => {
+            console.log('ITEM', item)
+            let HTMLConnection = document.createElement('div');
+            HTMLConnection.classList.add('partners-connection')
+            HTMLConnection.classList.add(item.id)
+
+            const itemRect = item.getBoundingClientRect();
+
+            const partner = partnersConnections.find(connection => connection.partner.id === parseInt(item.id))
+            const partnerRect = document.getElementById(partner.person.id).getBoundingClientRect();
+
+            console.log('partnerRect.left')
+            console.log(partnerRect.left)
+            console.log('itemRect.left')
+            console.log(itemRect.left)
+
+            HTMLConnection.style.left = `${ partnerRect.right - partnerRect.width/2 }px`;
+            HTMLConnection.style.top = `${ partnerRect.top + partnerRect.height/2}px`;
+            HTMLConnection.style.width = `${ itemRect.left - partnerRect.left }px`;
+
+
+            console.log('CONNECTION BETWEEN PARTNERTS', item.id , '====>>>>', partner.person.id)
+            console.log(itemRect)
+            console.log(data)
+
+            let personFrom = data.find(data => data.id === parseInt(partner.person.id))
+            let personTo = data.find(data => data.id === parseInt(partner.partner.id))
+
+            const treeContainer = document.querySelector('.tree');
+            treeContainer.appendChild(HTMLConnection);
+        })
+
+    }
+
+    const findItemCloserToLeft = (personElement, partnerElement) => {
+        return personElement.getBoundingClientRect().left > partnerElement.getBoundingClientRect().left ? personElement : partnerElement
+    }
+
 
     const generateTileOfPerson = (node) => {
         console.log('TWORZENIE KAFELKA')
@@ -83,48 +230,28 @@ $(document).ready(function() {
         const $li = $('<li>');
         const $div = $('<div class="node"></div>');
 
-        let itemHTML = generateTileOfPerson(node)
+        let itemHTML = generateTileOfPerson(node);
+        $div.append(itemHTML);
 
-        if(node.pIds) {
-            console.log('MAMY PARTNERÓW')
-            node.pIds.forEach(pId => {
-                $div.append(
-                    data.filter(person => person.id === pId).map(person => generateTileOfPerson(person))
-                )
-            })
-        }
-
-        if(node) {
-            const nodeChildrens = node.chIds;
-            if (nodeChildrens && nodeChildrens.length > 0){
-                console.log('MAMY DZIECI')
-                nodeChildrens.forEach((child) => {
-                    const children = data.filter(person => person.id === child)[0]
-                    if(children.pIds) {
-                        children.pIds.forEach(childPartnerIds => {
-                            const partner = data.filter(person => person.id === childPartnerIds)[0]
-                            let $div2 = $('<div class="node div2"></div>');
-                            //udało się dodać rodziców partnera w lini z rodzicami
-
-                            if(partner.fid && !nodeCreatedFor.includes(partner.fid)) {
-                                const father = data.filter(person => person.id === partner.fid)[0]
-                                $div.append(generateTileOfPerson(father));
-                            }
-                            if(partner.mid && !nodeCreatedFor.includes(partner.mid)) {
-                                const mother = data.filter(person => person.id === partner.mid)[0]
-                                $div.append(generateTileOfPerson(mother));
-                            }
-                        })
-                    }})
+        if (node) {
+            if (node.pIds) {
+                console.log('Mamy partnerów');
+                node.pIds.forEach(pId => {
+                    const partner = data.filter(person => person.id === pId)[0];
+                    if (partner) {
+                        $div.append(createPartnerTree(partner));
+                    }
+                });
             }
         }
 
-        $div.append(itemHTML);
         $li.append($div);
 
         if (node.chIds && node.chIds.length > 0) {
             $li.append(createChildNodes(node.chIds));
         }
+
+
         nodeCreatedFor.push(node.id);
 
         if (itemsWithPartners.includes(node.id)) {
@@ -134,15 +261,37 @@ $(document).ready(function() {
         return $li;
     }
 
-    function createTreeInTree(data, pId) {
-        const $treeRoot = $('<ul>');
-        data.forEach(person => {
-            const treeNode = '<li>' + person.id + '</li>';
-            if (treeNode) {
-                $treeRoot.append(treeNode);
+    function createPartnerTree(partner) {
+
+        const $mainPartnerLi = $('<li></li>');
+
+        const $partnerDiv = $('<div class="node partner_parents_node"></div>');
+        const $partnerLi = $('<li></li>');
+
+        const $partnerUl = $('<ul class="partner-tree"></ul>');
+
+        if (partner.fid && !nodeCreatedFor.includes(partner.fid)) {
+            const father = data.filter(person => person.id === partner.fid)[0];
+            if (father) {
+                $partnerDiv.append(generateTileOfPerson(father));
+                nodeCreatedFor.push(father.id);
             }
-        });
-        return $treeRoot;
+
+        }
+
+        if (partner.mid && !nodeCreatedFor.includes(partner.mid)) {
+            const mother = data.filter(person => person.id === partner.mid)[0];
+            if (mother) {
+                $partnerDiv.append(generateTileOfPerson(mother));
+                nodeCreatedFor.push(mother.id);
+            }
+        }
+
+        $partnerLi.append($partnerDiv);
+        $partnerLi.append(generateTileOfPerson(partner));
+        $partnerUl.append($partnerLi);
+        $mainPartnerLi.append($partnerUl);
+        return $mainPartnerLi;
     }
 
     function createLeftDiv(image) {

@@ -13,10 +13,14 @@
   { "id": 12, "mid": 10, "fid": 11, "sex": "male", "image": "example1.jpg", "name": "Sam Thomas", "dob": "2025-11-11" },
   { "id": 13, "mid": 10, "fid": 11, "sex": "male", "image": "example1.jpg", "name": "Alex Martin", "dob": "2028-07-23" },
   { "id": 14, "mid": 10, "fid": 11, "sex": "female", "image": "example.jpg", "name": "Taylor White", "dob": "2030-01-01" },
-  { "id": 15, "chIds": [8], "sex": "male", "image": "example1.jpg", "name": "Ben Brown", "dob": "2030-01-01" },
-  { "id": 16, "chIds": [8], "sex": "female", "image": "example.jpg", "name": "Taylor Brown", "dob": "2030-01-01" },
-  { "id": 17, "chIds": [4], "sex": "male", "image": "example1.jpg", "name": "Ben Smith", "dob": "2030-01-01" },
-  { "id": 18, "chIds": [4], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" },
-  { "id": 19, "chIds": [11], "sex": "male", "image": "example1.jpg", "name": "Ben Smith", "dob": "2030-01-01" },
-  { "id": 20, "chIds": [11], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" }
+  { "id": 15, "pIds": [16],"chIds": [8], "sex": "male", "image": "example1.jpg", "name": "Ben Brown", "dob": "2030-01-01" },
+  { "id": 16, "pIds": [15],"chIds": [8], "sex": "female", "image": "example.jpg", "name": "Taylor Brown", "dob": "2030-01-01" },
+  { "id": 17, "pIds": [18],"chIds": [4], "sex": "male", "image": "example1.jpg", "name": "Ben Smith", "dob": "2030-01-01" },
+  { "id": 18, "pIds": [17],"chIds": [4], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" },
+  { "id": 19, "pIds": [20],"chIds": [11], "sex": "male", "image": "example1.jpg", "name": "Ben Smith", "dob": "2030-01-01" },
+  { "id": 20, "pIds": [19],"chIds": [11], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" },
+  { "id": 21, "pIds": [22], "chIds": [20], "sex": "female", "image": "example.jpg", "name": "Taylor qwe", "dob": "2030-01-01" },
+  { "id": 22, "pIds": [21], "chIds": [20], "sex": "female", "image": "example.jpg", "name": "Taylor ewq", "dob": "2030-01-01" },
+  { "id": 23, "mid": 22, "fid": 21, "sex": "female", "image": "example.jpg", "name": "Taylor tre", "dob": "2030-01-01" }
+
 ]

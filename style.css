@@ -60,22 +60,26 @@ body {
     width: 100%;
 }
 
-.tree li::before,
-.tree li::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 50%;
-    border-top: 1px solid #ccc;
-    width: 50%;
-    height: 20px;
+.partner_parents_node {
+    margin-top: 15px !important;
 }
 
-.tree li::after {
-    right: auto;
-    left: 50%;
-    border-left: 1px solid #ccc;
-}
+/*.tree li::before,*/
+/*.tree li::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    right: 50%;*/
+/*    border-top: 1px solid #ccc;*/
+/*    width: 50%;*/
+/*    height: 20px;*/
+/*}*/
+
+/*.tree li::after {*/
+/*    right: auto;*/
+/*    left: 50%;*/
+/*    border-left: 1px solid #ccc;*/
+/*}*/
 
 .tree li:only-child::after,
 .tree li:only-child::before {
@@ -83,7 +87,7 @@ body {
 }
 
 .tree li:only-child {
-    padding-top: 0;
+    padding: 0;
 }
 
 .tree li:first-child::before,
@@ -91,12 +95,12 @@ body {
     border: 0 none;
 }
 
-.tree li:last-child::before {
-    border-right: 1px solid #ccc;
-    border-radius: 0 5px 0 0;
-    -webkit-border-radius: 0 5px 0 0;
-    -moz-border-radius: 0 5px 0 0;
-}
+/*.tree li:last-child::before {*/
+/*    border-right: 1px solid #ccc;*/
+/*    border-radius: 0 5px 0 0;*/
+/*    -webkit-border-radius: 0 5px 0 0;*/
+/*    -moz-border-radius: 0 5px 0 0;*/
+/*}*/
 
 .tree li:first-child::after {
     border-radius: 5px 0 0 0;
@@ -104,15 +108,15 @@ body {
     -moz-border-radius: 5px 0 0 0;
 }
 
-.tree ul ul::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    border-left: 1px solid #ccc;
-    width: 0;
-    height: 20px;
-}
+/*.tree ul ul::before {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    left: 50%;*/
+/*    border-left: 1px solid #ccc;*/
+/*    width: 0;*/
+/*    height: 20px;*/
+/*}*/
 
 .add_button {
     margin-left: .5rem;
@@ -121,6 +125,8 @@ body {
 }
 
 .single-item{
+    z-index: 999;
+    align-self: end;
     margin-left: 5px;
     min-width: 350px;
     padding: 10px;
@@ -172,6 +178,120 @@ body {
     font-size: 24px;
 }
 
+
+.line-div-left {
+    position: absolute;
+    border-bottom: 2px solid white;
+}
+
+.line-div-left::before {
+    content: '';
+    position: absolute;
+    bottom: -900%;
+    left: 0;
+    height: 900%;
+    width: 2px;
+    background: white;
+}
+
+.line-div-left::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    background: white;
+    height: 100%;
+}
+
+.line-div-left-parent {
+    position: absolute;
+    border-bottom: 2px solid red;
+}
+
+.line-div-left-parent::before {
+    content: '';
+    position: absolute;
+    bottom: -900%;
+    left: 0;
+    height: 900%;
+    width: 2px;
+    background: white;
+}
+
+.line-div-left-parent::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    background: white;
+    height: 100%;
+}
+
+
+.line-div-partner {
+    position: absolute;
+    border-bottom: 2px solid white;
+}
+
+
+.line-div-right {
+    position: absolute;
+    border-bottom: 2px solid white;
+}
+
+.line-div-both {
+    position: absolute;
+    border-bottom: 2px solid red;
+}
+
+.line-div-right::before {
+    content: '';
+    position: absolute;
+    bottom: -900%;
+    right: 0;
+    background: white;
+    width: 2px;
+    height: 900%;
+}
+
+.line-div-right::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: white;
+    width: 2px;
+    height: 100%;
+}
+
+.line-div-both::before {
+    content: '';
+    position: absolute;
+    bottom: -900%;
+    right: 0;
+    background: white;
+    width: 2px;
+    height: 900%;
+}
+
+.line-div-both::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: white;
+    width: 2px;
+    height: 100%;
+}
+
+.partners-connection {
+    height: 2px;
+    border-bottom: 2px solid red;
+    position: absolute;
+}
+
 .birth_date, .death_date {
     display: grid;
     grid-template-columns: 60px 1fr;
@@ -199,6 +319,13 @@ body {
 .node {
     display: inline-flex;
     margin: 20px;
+    gap: 50px ;
+}
+
+.partner-tree li .node{
+    margin-left: 50px;
+    margin-right: 50px;
+    align-self: center;
 }
 
 .left {
@@ -232,12 +359,12 @@ body {
     color: #000;
 }
 
-.tree li a:hover+ul li::after,
-.tree li a:hover+ul li::before,
-.tree li a:hover+ul::before,
-.tree li a:hover+ul ul::before {
-    border-color: #94a0b4;
-}
+/*.tree li a:hover+ul li::after,*/
+/*.tree li a:hover+ul li::before,*/
+/*.tree li a:hover+ul::before,*/
+/*.tree li a:hover+ul ul::before {*/
+/*    border-color: #94a0b4;*/
+/*}*/
 
 .tree li.spouse_node {
     margin-top: -20px;
