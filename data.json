@@ -19,8 +19,8 @@
   { "id": 18, "pIds": [17],"chIds": [4], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" },
   { "id": 19, "pIds": [20],"chIds": [11], "sex": "male", "image": "example1.jpg", "name": "Ben Smith", "dob": "2030-01-01" },
   { "id": 20, "pIds": [19],"chIds": [11], "sex": "female", "image": "example.jpg", "name": "Taylor Smith", "dob": "2030-01-01" },
-  { "id": 21, "pIds": [22], "chIds": [20], "sex": "female", "image": "example.jpg", "name": "Taylor qwe", "dob": "2030-01-01" },
-  { "id": 22, "pIds": [21], "chIds": [20], "sex": "female", "image": "example.jpg", "name": "Taylor ewq", "dob": "2030-01-01" },
+  { "id": 21, "pIds": [22], "chIds": [20,23], "sex": "female", "image": "example.jpg", "name": "Taylor qwe", "dob": "2030-01-01" },
+  { "id": 22, "pIds": [21], "chIds": [20,23], "sex": "female", "image": "example.jpg", "name": "Taylor ewq", "dob": "2030-01-01" },
   { "id": 23, "mid": 22, "fid": 21, "sex": "female", "image": "example.jpg", "name": "Taylor tre", "dob": "2030-01-01" }
 
 ]

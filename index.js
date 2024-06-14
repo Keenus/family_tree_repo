@@ -42,22 +42,81 @@ $(document).ready(function() {
 
         return createItem(node);
     }
+    let allLines = []
+    const createPartnerConnections = (data) => {
+        const treeContainer = document.querySelector('.tree');
+
+        data.forEach(person => {
+            if (person.pIds) {
+                person.pIds.forEach(pId => {
+                    const partner = data.find(data => data.id === pId);
+                    const personElement = document.getElementById(person.id);
+                    const partnerElement = document.getElementById(pId);
+
+                    if (!personElement || !partnerElement) return;
+
+                    const personElementRect = personElement.getBoundingClientRect();
+                    const partnerElementRect = partnerElement.getBoundingClientRect();
+
+                    console.log('Partner', partnerElementRect);
+                    console.log('Person', personElementRect);
+
+                    // Create a line connecting the two partner elements
+                    const partnerHTMLElement = document.createElement('div');
+                    partnerHTMLElement.classList.add('line-div-partner');
+                    partnerHTMLElement.classList.add(`${person.id}-${pId}`);
+
+                    const startX = personElementRect.left + personElementRect.width / 2;
+                    const startY = personElementRect.top + personElementRect.height / 2;
+                    const endX = partnerElementRect.left + partnerElementRect.width / 2;
+                    const endY = partnerElementRect.top + partnerElementRect.height / 2;
+
+                    const width = Math.abs(endX - startX);
+                    const height = Math.abs(endY - startY);
+
+                    partnerHTMLElement.style.position = 'absolute';
+                    partnerHTMLElement.style.left = `${Math.min(startX, endX)}px`;
+                    partnerHTMLElement.style.top = `${Math.min(startY, endY)}px`;
+                    partnerHTMLElement.style.width = `${width}px`;
+                    partnerHTMLElement.style.height = '2px'; // Fixed height for partner line
+                    partnerHTMLElement.style.backgroundColor = 'black'; // Line color
+
+                    let isDuplicateConnection = allConnections.some(conn =>
+                        (conn.from === person.id && conn.to === pId) ||
+                        (conn.from === pId && conn.to === person.id)
+                    );
+
+                    if (!isDuplicateConnection) {
+                        treeContainer.appendChild(partnerHTMLElement);
+                        allConnections.push({ from: person.id, to: pId });
+                    }
+
+                    allLines.push({
+                        from: person.id,
+                        to: pId,
+                        el: partnerHTMLElement})
+                });
+            }
+        });
+    };
+
+    const allConnections = [];
 
     function updateTreeNode(data) {
-        console.log('AKTUALIZACJA DRZEWA')
+        console.log('AKTUALIZACJA DRZEWA');
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
         let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
         rootNodes.forEach(person => {
-            if(person.pIds) {
+            if (person.pIds) {
                 person.pIds.forEach(pId => {
-                    if(data.some(p => (p.chIds || []).includes(pId))) {
+                    if (data.some(p => (p.chIds || []).includes(pId))) {
                         rootNodes = rootNodes.filter(p => p.id !== person.id);
                     }
-                })
+                });
             }
-        })
+        });
 
         rootNodes.forEach(person => {
             const treeNode = createTreeNode(person);
@@ -65,46 +124,55 @@ $(document).ready(function() {
                 $treeRoot.append(treeNode);
             }
         });
-        let connections = {}
+
+        let connections = {};
         data.forEach(person => {
-            connections[person.id] = person.chIds || []
-        })
+            connections[person.id] = person.chIds || [];
+        });
 
-        for (const connectionsKey in connections) {
-            const personElement = document.getElementById(connectionsKey)
-            connections[connectionsKey].forEach(connection => {
-                const activePersonElement = document.getElementById(connection)
-                setTimeout(() => {
-                    createConnection(personElement, activePersonElement, connection, connectionsKey)
-                }, 100)
-            })
-        }
-        console.log('Połączeqwenia', allConnections)
 
-        createPartnersConnections(data)
+        setTimeout(() => {
+            createPartnerConnections(data);
+
+            for (const connectionsKey in connections) {
+                connections[connectionsKey].forEach(connection => {
+                    if (connectionsKey) {
+                        createConnection(connectionsKey, connection, connectionsKey);
+                    }
+                });
+            }
+            // Call the partner connections function
+        }, 100);
     }
 
-    const allConnections = []
-    const createConnection = (personElement, activePersonElement ,connection, connectionFrom) => {
-        console.log('TWORZENIE POŁĄCZENIA');
+    const createConnection = (connectionsKey, connection, connectionFrom) => {
+        const personElement = document.getElementById(connectionsKey);
+        const activePersonElement = document.getElementById(connection);
+        console.log(allLines)
+
         console.log(personElement.getBoundingClientRect());
         console.log(activePersonElement.getBoundingClientRect());
-        console.log(connection, connectionFrom)
-
-        let personFrom = data.find(data => data.id === parseInt(connectionFrom))
-        let personTo = data.find(data => data.id === parseInt(connection))
-
 
         const personElementRect = personElement.getBoundingClientRect();
         const activePersonElementRect = activePersonElement.getBoundingClientRect();
 
         const HTMLElement = document.createElement('div');
-
-        //check if exist elements with class ${connection}
-
+        HTMLElement.classList.add('line-div');
         HTMLElement.classList.add(`${connection}-${connectionFrom}`);
 
-        const startX = personElementRect.left + personElementRect.width / 2;
+
+        let lineMiddle = 0;
+        lineMiddle = Math.abs((activePersonElementRect.left - personElementRect.left) / 2);
+
+        const currentLine = allLines.filter((line) => line.from === connection)[0];
+
+        if(currentLine) {
+            lineMiddle = currentLine.el.getBoundingClientRect().left + (currentLine.el.getBoundingClientRect().width/2);
+        }
+        console.log('currentLine')
+        console.log(currentLine)
+
+        const startX = lineMiddle;
         const startY = personElementRect.top + personElementRect.height;
         const endX = activePersonElementRect.left + activePersonElementRect.width / 2;
         const endY = activePersonElementRect.top + activePersonElementRect.height / 2;
@@ -115,108 +183,28 @@ $(document).ready(function() {
         HTMLElement.style.position = 'absolute';
         HTMLElement.style.left = `${Math.min(startX, endX)}px`;
         HTMLElement.style.top = `${startY}px`;
-        HTMLElement.style.width = `${width}px`;
-        HTMLElement.style.height = `${height/10}px`;
+        HTMLElement.style.height = `${height / 10}px`;
 
-        let createdElementClassName = '';
-
-        if(personElementRect.left > activePersonElementRect.left) {
-            createdElementClassName = 'line-div-left';
-        } else {
-            createdElementClassName = 'line-div-right';
-        }
-
-        if(personFrom.chIds && personFrom.chIds.includes(personTo.id)  && personFrom.id === 7) {
+        let createdElementClassName = personElementRect.left > lineMiddle ? 'line-div-left' : 'line-div-right';
+        if (personElementRect.left === activePersonElementRect.left) {
             createdElementClassName = 'line-div-both';
         }
-
-        HTMLElement.classList.add(createdElementClassName)
+        HTMLElement.classList.add(createdElementClassName);
 
         const treeContainer = document.querySelector('.tree');
-        let isDuplicateFromParent = allConnections.some(connection => connection.to === personTo.id)
-
-        if(isDuplicateFromParent) {
+        let isDuplicateFromParent = allConnections.some(conn => conn.to === parseInt(connection));
+        if (!isDuplicateFromParent) {
             treeContainer.appendChild(HTMLElement);
+            allConnections.push({ from: parseInt(connectionFrom), to: parseInt(connection) });
         }
-
-        allConnections.push({
-            from: parseInt(connectionFrom),
-            to: parseInt(connection)
-        })
-
     };
-    const createPartnersConnections = (data) => {
-        let partners = data.filter(person => person.pIds)
-        let partnersConnections = []
-        partners.forEach(person => {
-            if (person.pIds) {
-                partners.forEach(partner => {
-                        if (person.pIds && person.pIds.includes(partner.id)) {
-                            if(partnersConnections.some(connection => connection.person.id === person.id && connection.partner.id === partner.id || connection.person.id === partner.id && connection.partner.id === person.id)) {
-                                return;
-                            }
-                            partnersConnections.push({
-                                person: person,
-                                partner: partner
-                            })
-                            }
-
-                    }
-                )
-            }
-        })
-        let itemsCloserToRight = []
-
-        partnersConnections.forEach(connection => {
-            const personElement = document.getElementById(connection.person.id)
-            const partnerElement = document.getElementById(connection.partner.id)
-
-            itemsCloserToRight.push(findItemCloserToLeft(personElement, partnerElement))
-        })
-
-        console.log('ITEMS CLOSER TO LEFT', itemsCloserToRight)
-
-        itemsCloserToRight.forEach(item => {
-            console.log('ITEM', item)
-            let HTMLConnection = document.createElement('div');
-            HTMLConnection.classList.add('partners-connection')
-            HTMLConnection.classList.add(item.id)
-
-            const itemRect = item.getBoundingClientRect();
-
-            const partner = partnersConnections.find(connection => connection.partner.id === parseInt(item.id))
-            const partnerRect = document.getElementById(partner.person.id).getBoundingClientRect();
-
-            console.log('partnerRect.left')
-            console.log(partnerRect.left)
-            console.log('itemRect.left')
-            console.log(itemRect.left)
-
-            HTMLConnection.style.left = `${ partnerRect.right - partnerRect.width/2 }px`;
-            HTMLConnection.style.top = `${ partnerRect.top + partnerRect.height/2}px`;
-            HTMLConnection.style.width = `${ itemRect.left - partnerRect.left }px`;
-
-
-            console.log('CONNECTION BETWEEN PARTNERTS', item.id , '====>>>>', partner.person.id)
-            console.log(itemRect)
-            console.log(data)
-
-            let personFrom = data.find(data => data.id === parseInt(partner.person.id))
-            let personTo = data.find(data => data.id === parseInt(partner.partner.id))
-
-            const treeContainer = document.querySelector('.tree');
-            treeContainer.appendChild(HTMLConnection);
-        })
-
-    }
-
-    const findItemCloserToLeft = (personElement, partnerElement) => {
-        return personElement.getBoundingClientRect().left > partnerElement.getBoundingClientRect().left ? personElement : partnerElement
-    }
 
 
     const generateTileOfPerson = (node) => {
-        console.log('TWORZENIE KAFELKA')
+        console.log('TWORZENIE KAFELKA ', node.id)
+        if(nodeCreatedFor.includes(node.id)) {
+            return;
+        }
         const $a = $('<a href="#" class="single-item"></a>').attr('id', node.id);
         const $containerDiv = $('<div class="container"></div>');
         $containerDiv.append(createLeftDiv(node.image), createRightDiv(node));
@@ -251,6 +239,9 @@ $(document).ready(function() {
             $li.append(createChildNodes(node.chIds));
         }
 
+        console.log('testtt')
+        console.log('testtt')
+
 
         nodeCreatedFor.push(node.id);
 
@@ -262,6 +253,10 @@ $(document).ready(function() {
     }
 
     function createPartnerTree(partner) {
+
+        console.log('TWORZENIE DRZEWA PARTNERA' , partner.id)
+
+        console.log(partner)
 
         const $mainPartnerLi = $('<li></li>');
 

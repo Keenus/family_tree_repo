@@ -44,7 +44,7 @@ body {
     display: flex;
     flex-grow: 1;
     flex-wrap: wrap;
-    align-content: start;
+    align-content: center;
     justify-content: center;
     float: left;
     text-align: center;
@@ -204,37 +204,6 @@ body {
     height: 100%;
 }
 
-.line-div-left-parent {
-    position: absolute;
-    border-bottom: 2px solid red;
-}
-
-.line-div-left-parent::before {
-    content: '';
-    position: absolute;
-    bottom: -900%;
-    left: 0;
-    height: 900%;
-    width: 2px;
-    background: white;
-}
-
-.line-div-left-parent::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 2px;
-    background: white;
-    height: 100%;
-}
-
-
-.line-div-partner {
-    position: absolute;
-    border-bottom: 2px solid white;
-}
-
 
 .line-div-right {
     position: absolute;
@@ -243,7 +212,7 @@ body {
 
 .line-div-both {
     position: absolute;
-    border-bottom: 2px solid red;
+    border-bottom: 2px solid white;
 }
 
 .line-div-right::before {
@@ -286,11 +255,6 @@ body {
     height: 100%;
 }
 
-.partners-connection {
-    height: 2px;
-    border-bottom: 2px solid red;
-    position: absolute;
-}
 
 .birth_date, .death_date {
     display: grid;
@@ -319,10 +283,16 @@ body {
 .node {
     display: inline-flex;
     margin: 20px;
-    gap: 50px ;
+    gap: 50px;
 }
 
-.partner-tree li .node{
+.line-div-partner {
+    position: absolute;
+    border-bottom: 2px solid red;
+}
+
+
+.partner-tree li .node {
     margin-left: 50px;
     margin-right: 50px;
     align-self: center;
