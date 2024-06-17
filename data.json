@@ -22,5 +22,4 @@
   { "id": 21, "pIds": [22], "chIds": [20,23], "sex": "female", "image": "example.jpg", "name": "Taylor qwe", "dob": "2030-01-01" },
   { "id": 22, "pIds": [21], "chIds": [20,23], "sex": "female", "image": "example.jpg", "name": "Taylor ewq", "dob": "2030-01-01" },
   { "id": 23, "mid": 22, "fid": 21, "sex": "female", "image": "example.jpg", "name": "Taylor tre", "dob": "2030-01-01" }
-
 ]

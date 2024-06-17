@@ -14,7 +14,6 @@ let lastUsedId = 0;
 let obj;
 let data = []
 let createNewMode
-let itemsWithPartners = []
 let nodeCreatedFor = []
 let currentX = 0;
 let currentY = 0;
@@ -22,34 +21,19 @@ let currentY = 0;
 
 $(document).ready(function() {
     function createTreeNode(node) {
-        console.log('TWORZENIE WĘZŁA')
-        if (!node) {
-            return null;
-        }
-
-        hideLandingPage();
-
-        if(nodeCreatedFor.includes(node.id)) {
+        if (!node || nodeCreatedFor.includes(node.id)) {
             return;
         }
-
-        if(node.pIds)
-            node.pIds.forEach(pId => {
-                if(nodeCreatedFor.includes(pId)) {
-                    itemsWithPartners.push(node.id)
-                }
-            })
-
+        hideLandingPage();
         return createItem(node);
     }
-    let allLines = []
+
     const createPartnerConnections = (data) => {
         const treeContainer = document.querySelector('.tree');
 
         data.forEach(person => {
             if (person.pIds) {
                 person.pIds.forEach(pId => {
-                    const partner = data.find(data => data.id === pId);
                     const personElement = document.getElementById(person.id);
                     const partnerElement = document.getElementById(pId);
 
@@ -58,10 +42,6 @@ $(document).ready(function() {
                     const personElementRect = personElement.getBoundingClientRect();
                     const partnerElementRect = partnerElement.getBoundingClientRect();
 
-                    console.log('Partner', partnerElementRect);
-                    console.log('Person', personElementRect);
-
-                    // Create a line connecting the two partner elements
                     const partnerHTMLElement = document.createElement('div');
                     partnerHTMLElement.classList.add('line-div-partner');
                     partnerHTMLElement.classList.add(`${person.id}-${pId}`);
@@ -78,8 +58,6 @@ $(document).ready(function() {
                     partnerHTMLElement.style.left = `${Math.min(startX, endX)}px`;
                     partnerHTMLElement.style.top = `${Math.min(startY, endY)}px`;
                     partnerHTMLElement.style.width = `${width}px`;
-                    partnerHTMLElement.style.height = '2px'; // Fixed height for partner line
-                    partnerHTMLElement.style.backgroundColor = 'black'; // Line color
 
                     let isDuplicateConnection = allConnections.some(conn =>
                         (conn.from === person.id && conn.to === pId) ||
@@ -90,11 +68,6 @@ $(document).ready(function() {
                         treeContainer.appendChild(partnerHTMLElement);
                         allConnections.push({ from: person.id, to: pId });
                     }
-
-                    allLines.push({
-                        from: person.id,
-                        to: pId,
-                        el: partnerHTMLElement})
                 });
             }
         });
@@ -103,99 +76,116 @@ $(document).ready(function() {
     const allConnections = [];
 
     function updateTreeNode(data) {
-        console.log('AKTUALIZACJA DRZEWA');
         const $treeRoot = $('.tree > ul');
         $treeRoot.empty();
 
         let rootNodes = data.filter(person => !data.some(p => (p.chIds || []).includes(person.id)));
-        rootNodes.forEach(person => {
-            if (person.pIds) {
-                person.pIds.forEach(pId => {
-                    if (data.some(p => (p.chIds || []).includes(pId))) {
-                        rootNodes = rootNodes.filter(p => p.id !== person.id);
-                    }
-                });
-            }
-        });
 
         rootNodes.forEach(person => {
             const treeNode = createTreeNode(person);
             if (treeNode) {
                 $treeRoot.append(treeNode);
             }
-        });
+        })
 
         let connections = {};
         data.forEach(person => {
             connections[person.id] = person.chIds || [];
         });
 
+        createPartnerConnections(data);
 
         setTimeout(() => {
-            createPartnerConnections(data);
-
             for (const connectionsKey in connections) {
                 connections[connectionsKey].forEach(connection => {
                     if (connectionsKey) {
-                        createConnection(connectionsKey, connection, connectionsKey);
+                        createConnection(connectionsKey, connection);
                     }
                 });
             }
-            // Call the partner connections function
         }, 100);
     }
 
-    const createConnection = (connectionsKey, connection, connectionFrom) => {
-        const personElement = document.getElementById(connectionsKey);
-        const activePersonElement = document.getElementById(connection);
-        console.log(allLines)
+    const createConnection = (connectionsKey, connection) => {
 
-        console.log(personElement.getBoundingClientRect());
-        console.log(activePersonElement.getBoundingClientRect());
+        connectionsKey = parseInt(connectionsKey);
+        connection = parseInt(connection);
+        console.log('zzzzzzzzzzzzzzzzzzzzzzzz')
+        console.log(connectionsKey , connection)
 
-        const personElementRect = personElement.getBoundingClientRect();
-        const activePersonElementRect = activePersonElement.getBoundingClientRect();
+        const personFromElement = document.getElementById(connectionsKey);
+        const personToElement = document.getElementById(connection);
 
-        const HTMLElement = document.createElement('div');
-        HTMLElement.classList.add('line-div');
-        HTMLElement.classList.add(`${connection}-${connectionFrom}`);
+        if(!personFromElement || !personToElement) return;
 
+        const personFromElementRect = personFromElement.getBoundingClientRect();
+        const personToElementRect = personToElement.getBoundingClientRect();
 
-        let lineMiddle = 0;
-        lineMiddle = Math.abs((activePersonElementRect.left - personElementRect.left) / 2);
+        let connectionPerson = data.filter(person => person.id === parseInt(connectionsKey))[0];
+        let connectionPersonPartner = data.filter(person => connectionPerson.pIds && connectionPerson.pIds.includes(person.id))[0];
 
-        const currentLine = allLines.filter((line) => line.from === connection)[0];
+        let connectionPersonRect = document.getElementById(connectionPerson.id).getBoundingClientRect();
+        if(!connectionPersonPartner) return;
+        let connectionPersonPartnerRect = document.getElementById(connectionPersonPartner.id).getBoundingClientRect();
+        let middlePointBetweenPartners = 0
 
-        if(currentLine) {
-            lineMiddle = currentLine.el.getBoundingClientRect().left + (currentLine.el.getBoundingClientRect().width/2);
+        if (connectionPersonRect.left > connectionPersonPartnerRect.left) {
+            let distanceBetweenPartners = connectionPersonRect.left - (connectionPersonPartnerRect.left + connectionPersonPartnerRect.width)
+            middlePointBetweenPartners = connectionPersonPartnerRect.left + connectionPersonPartnerRect.width + distanceBetweenPartners / 2
+        } else {
+            let distanceBetweenPartners = connectionPersonPartnerRect.left - (connectionPersonRect.left + connectionPersonRect.width)
+            middlePointBetweenPartners = connectionPersonRect.left + connectionPersonRect.width + distanceBetweenPartners / 2
         }
-        console.log('currentLine')
-        console.log(currentLine)
+        console.log('middlePointBetweenPartners' , middlePointBetweenPartners)
 
-        const startX = lineMiddle;
-        const startY = personElementRect.top + personElementRect.height;
-        const endX = activePersonElementRect.left + activePersonElementRect.width / 2;
-        const endY = activePersonElementRect.top + activePersonElementRect.height / 2;
+        console.log(`line-div ${connection}-${connectionsKey}`)
+
+        const startX = middlePointBetweenPartners
+        const startY = connectionPersonRect.top + connectionPersonRect.height / 2;
+
+        const endX = personToElementRect.left + personToElementRect.width / 2;
+        const endY = personToElementRect.top;
 
         const width = Math.abs(endX - startX);
         const height = Math.abs(endY - startY);
 
+
+        const HTMLElement = document.createElement('div');
+        HTMLElement.classList.add('line-div');
+        HTMLElement.classList.add(`${connection}-${connectionsKey}`);
         HTMLElement.style.position = 'absolute';
         HTMLElement.style.left = `${Math.min(startX, endX)}px`;
         HTMLElement.style.top = `${startY}px`;
-        HTMLElement.style.height = `${height / 10}px`;
+        HTMLElement.style.width = `${width}px`;
+        HTMLElement.style.height = `${Math.abs(personToElementRect.top - personFromElementRect.top)}px`;
 
-        let createdElementClassName = personElementRect.left > lineMiddle ? 'line-div-left' : 'line-div-right';
-        if (personElementRect.left === activePersonElementRect.left) {
-            createdElementClassName = 'line-div-both';
-        }
+        console.log('personFromElement.left' , personFromElement.left)
+        console.log('personToElement.left' , personToElement.left)
+        console.log('middlePointBetweenPartners' , middlePointBetweenPartners)
+
+        let topDiv = document.createElement('div');
+        topDiv.classList.add('top-div');
+        topDiv.style.borderBottom = '2px solid white';
+        topDiv.style.width = `${width}px`;
+        topDiv.style.height = `${personFromElementRect.height}px`
+        topDiv.style.maxHeight = '50%'
+        HTMLElement.appendChild(topDiv);
+
+        let bottomDiv = document.createElement('div');
+        bottomDiv.classList.add('bottom-div');
+        bottomDiv.style.width = `${width}px`;
+        bottomDiv.style.height = `${Math.abs(personToElementRect.top - personFromElementRect.top) - personFromElementRect.height}px`
+        HTMLElement.appendChild(bottomDiv);
+
+
+        let createdElementClassName = (personToElementRect.left + personToElementRect.width/2) < middlePointBetweenPartners ? 'line-div-left' : 'line-div-right';
         HTMLElement.classList.add(createdElementClassName);
 
         const treeContainer = document.querySelector('.tree');
         let isDuplicateFromParent = allConnections.some(conn => conn.to === parseInt(connection));
         if (!isDuplicateFromParent) {
             treeContainer.appendChild(HTMLElement);
-            allConnections.push({ from: parseInt(connectionFrom), to: parseInt(connection) });
+            allConnections.push({ from: parseInt(connectionsKey), to: parseInt(connection) });
         }
     };
 
@@ -218,64 +208,54 @@ $(document).ready(function() {
         const $li = $('<li>');
         const $div = $('<div class="node"></div>');
 
-        let itemHTML = generateTileOfPerson(node);
-        $div.append(itemHTML);
-
-        if (node) {
-            if (node.pIds) {
-                console.log('Mamy partnerów');
-                node.pIds.forEach(pId => {
-                    const partner = data.filter(person => person.id === pId)[0];
-                    if (partner) {
-                        $div.append(createPartnerTree(partner));
-                    }
-                });
-            }
+        if (node.pIds) {
+            node.pIds.forEach(pId => {
+                const partner = data.filter(person => person.id === pId)[0];
+                if (partner) {
+                    $div.append(createPartnerTree(partner));
+                }
+            });
         }
 
-        $li.append($div);
+           if(nodeCreatedFor.includes(node.id)) {
+               return;
+           }
 
-        if (node.chIds && node.chIds.length > 0) {
-            $li.append(createChildNodes(node.chIds));
-        }
+           let itemHTML = generateTileOfPerson(node);
+           $div.append(itemHTML);
 
-        console.log('testtt')
-        console.log('testtt')
+           $li.append($div);
 
+           if (node.chIds && node.chIds.length > 0) {
+               $li.append(createChildNodes(node.chIds));
+           }
 
-        nodeCreatedFor.push(node.id);
-
-        if (itemsWithPartners.includes(node.id)) {
-            return;
-        }
+           if(!nodeCreatedFor.includes(node.id)) {
+               nodeCreatedFor.push(node.id);
+           }
 
         return $li;
     }
 
     function createPartnerTree(partner) {
 
-        console.log('TWORZENIE DRZEWA PARTNERA' , partner.id)
-
-        console.log(partner)
-
         const $mainPartnerLi = $('<li></li>');
-
         const $partnerDiv = $('<div class="node partner_parents_node"></div>');
         const $partnerLi = $('<li></li>');
-
         const $partnerUl = $('<ul class="partner-tree"></ul>');
 
-        if (partner.fid && !nodeCreatedFor.includes(partner.fid)) {
-            const father = data.filter(person => person.id === partner.fid)[0];
+        if (partner.fId) {
+            console.log('Mamy ojca')
+            const father = data.filter(person => person.id === partner.fId)[0];
             if (father) {
                 $partnerDiv.append(generateTileOfPerson(father));
                 nodeCreatedFor.push(father.id);
             }
-
         }
 
-        if (partner.mid && !nodeCreatedFor.includes(partner.mid)) {
-            const mother = data.filter(person => person.id === partner.mid)[0];
+        if (partner.mId) {
+            console.log('Mamy matkę')
+            const mother = data.filter(person => person.id === partner.mId)[0];
             if (mother) {
                 $partnerDiv.append(generateTileOfPerson(mother));
                 nodeCreatedFor.push(mother.id);
@@ -421,7 +401,7 @@ $(document).ready(function() {
         const { name, birthDate } = addNewForm;
         validateField('#name', name);
         validateField('#birthDate', birthDate);
-
+        clearTree();
         if (createNewMode) {
             handleCreateNewMode(name, birthDate);
         } else {
@@ -463,7 +443,6 @@ $(document).ready(function() {
     function refreshTree(data) {
         console.log('ODŚWIEŻANIE DRZEWA')
         nodeCreatedFor = [];
-        itemsWithPartners = [];
         obj = data.reduce((acc, item) => {
             acc[item.id] = item;
             return acc;
@@ -518,6 +497,8 @@ $(document).ready(function() {
                     return;
                 }
 
+                console.log('typek', type)
+
                 let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate, addNewForm.sex);
                 const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
 
@@ -526,6 +507,15 @@ $(document).ready(function() {
                 if (preparedData) {
                     selectedPerson = preparedData.selectedPerson;
                     newPerson = preparedData.newPerson;
+
+                    if(preparedData.father) {
+                        data = data.map(person => person.id === preparedData.father.id ? preparedData.father : person);
+                    }
+
+                    if(preparedData.mother) {
+                        data = data.map(person => person.id === preparedData.mother.id ? preparedData.mother : person);
+                    }
+
                 }
 
                 if(selectedPerson.fId || selectedPerson.mId) {
@@ -545,7 +535,7 @@ $(document).ready(function() {
                     }
                 }
             }
-            resetForm(); // Ensure form resets after adding existing person
+            resetForm();
         }
     }
 
@@ -574,22 +564,65 @@ $(document).ready(function() {
     function preparePerson(selectedPerson, type, id, newPerson) {
         newPerson.chIds = newPerson.chIds || [];
         newPerson.pIds = newPerson.pIds || [];
+        setNewPersonAttributes(newPerson, type);
 
         if (type === 'mama' || type === 'tata') {
-            addParent(selectedPerson, type, id, newPerson);
+            return addParent(selectedPerson, type, id, newPerson);
         } else if (type === 'syn' || type === 'córka') {
-            addChild(selectedPerson, id, newPerson);
+            return  addChild(selectedPerson, id, newPerson);
         } else if (type === 'brat' || type === 'siostra') {
-            selectedPerson.sibIds = selectedPerson.sibIds || [];
-            selectedPerson.sibIds.push(id);
+            return prepareSibling(selectedPerson, type, id, newPerson);
         } else if (type === 'mąż' || type === 'żona') {
-            selectedPerson.pIds.push(id);
+            return preparePartner(selectedPerson, type, id, newPerson);
         }
 
-        setNewPersonAttributes(newPerson, type);
+        return null;
+    }
+
+    const prepareSibling = (selectedPerson, type, id, newPerson) => {
+        selectedPerson.sibIds = selectedPerson.sibIds || [];
+        selectedPerson.sibIds.push(id);
+        newPerson.sibIds = [];
+        newPerson.sibIds.push(selectedPerson.id);
+
+        let father;
+        let mother
+
+        if(selectedPerson.fId) {
+            newPerson.fId = selectedPerson.fId;
+            father = data.find(person => person.id === selectedPerson.fId);
+            if( father ) {
+                father.chIds = father.chIds || [];
+                father.chIds.push(id);
+            }
+        }
+
+        if(selectedPerson.mId) {
+            newPerson.mId = selectedPerson.mId;
+            mother = data.find(person => person.id === selectedPerson.mId);
+            if( mother ) {
+                mother.chIds = mother.chIds || [];
+                mother.chIds.push(id);
+            }
+        }
+
+        return { selectedPerson, newPerson, father, mother};
+    }
+
+    const preparePartner = (selectedPerson, type, id, newPerson) => {
+        selectedPerson.pIds = selectedPerson.pIds || [];
+        selectedPerson.pIds.push(id);
+
+        newPerson.pIds = [];
+        newPerson.pIds.push(selectedPerson.id);
+
+        if(selectedPerson.chIds) {
+           newPerson.chIds = selectedPerson.chIds;
+        }
 
         return { selectedPerson, newPerson };
     }
+
 
     function addParent(selectedPerson, type, id, newPerson) {
         if (type === 'mama') {
@@ -597,17 +630,46 @@ $(document).ready(function() {
         } else if (type === 'tata') {
             selectedPerson.fId = id;
         }
+
+        newPerson.chIds = newPerson.chIds || [];
         newPerson.chIds.push(selectedPerson.id);
+
+        if(selectedPerson.sibIds && selectedPerson.sibIds.length > 0) {
+            selectedPerson.sibIds.forEach(sibId => {
+                const child = data.find(person => person.id === sibId);
+                if(child) {
+                    newPerson.chIds.push(sibId);
+                }
+            })
+        }
+
+        return { selectedPerson, newPerson };
     }
 
     function addChild(selectedPerson, id, newPerson) {
-        if (!selectedPerson.chIds) selectedPerson.chIds = [];
+        selectedPerson.chIds = selectedPerson.chIds || [];
         selectedPerson.chIds.push(id);
+
+        if(selectedPerson.chIds.length > 0) {
+            newPerson.sibIds = selectedPerson.chIds.filter(chId => chId !== id);
+            selectedPerson.chIds.forEach(chId => {
+                if(chId !== id) {
+                    const sibling = data.find(person => person.id === chId);
+                    if(sibling) {
+                        sibling.sibIds = sibling.sibIds || [];
+                        sibling.sibIds.push(id);
+                    }
+                }
+            })
+        }
+
         if (selectedPerson.sex === 'male') {
             newPerson.fId = selectedPerson.id;
         } else {
             newPerson.mId = selectedPerson.id;
         }
+
+        return { selectedPerson, newPerson };
     }
 
     function setNewPersonAttributes(newPerson, type) {
@@ -702,6 +764,11 @@ $(document).ready(function() {
         });
     }
 
+    const clearTree = () => {
+        const $treeRoot = $('.tree > ul');
+        $treeRoot.empty();
+    }
+
     function resetAll() {
         createNewMode = false;
         itemsWithPartners = [];
@@ -726,6 +793,9 @@ $(document).ready(function() {
         const reader = new FileReader();
         reader.onload = function(e) {
             data = JSON.parse(e.target.result);
+            if (typeof data === 'object' && !Array.isArray(data)) {
+                data = Object.values(data);
+            }
             obj = data.reduce((acc, item) => {
                 acc[item.id] = item;
                 return acc;

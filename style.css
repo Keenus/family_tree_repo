@@ -42,9 +42,10 @@ body {
 
 .tree li {
     display: flex;
+    gap: 2rem;
     flex-grow: 1;
     flex-wrap: wrap;
-    align-content: center;
+    align-content: flex-start;
     justify-content: center;
     float: left;
     text-align: center;
@@ -61,7 +62,7 @@ body {
 }
 
 .partner_parents_node {
-    margin-top: 15px !important;
+    margin: 15px 0!important;
 }
 
 /*.tree li::before,*/
@@ -166,6 +167,25 @@ body {
     border-bottom: 1px solid #8f004f;
 }
 
+.line-div-right .top-div {
+    border-left: 2px solid white;
+    border-bottom-left-radius: 5px;
+}
+
+.line-div-right .bottom-div {
+    border-right: 2px solid white;
+}
+
+.line-div-left .top-div {
+    border-right: 2px solid white;
+    border-bottom-right-radius: 5px;
+}
+
+.line-div-left .bottom-div {
+    border-left: 2px solid white;
+}
+
+
 
 .person_name {
     padding-bottom: 5px;
@@ -177,84 +197,9 @@ body {
     flex-wrap: nowrap;
     font-size: 24px;
 }
-
-
-.line-div-left {
-    position: absolute;
-    border-bottom: 2px solid white;
+* {
+    box-sizing: border-box;
 }
-
-.line-div-left::before {
-    content: '';
-    position: absolute;
-    bottom: -900%;
-    left: 0;
-    height: 900%;
-    width: 2px;
-    background: white;
-}
-
-.line-div-left::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 2px;
-    background: white;
-    height: 100%;
-}
-
-
-.line-div-right {
-    position: absolute;
-    border-bottom: 2px solid white;
-}
-
-.line-div-both {
-    position: absolute;
-    border-bottom: 2px solid white;
-}
-
-.line-div-right::before {
-    content: '';
-    position: absolute;
-    bottom: -900%;
-    right: 0;
-    background: white;
-    width: 2px;
-    height: 900%;
-}
-
-.line-div-right::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    background: white;
-    width: 2px;
-    height: 100%;
-}
-
-.line-div-both::before {
-    content: '';
-    position: absolute;
-    bottom: -900%;
-    right: 0;
-    background: white;
-    width: 2px;
-    height: 900%;
-}
-
-.line-div-both::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    background: white;
-    width: 2px;
-    height: 100%;
-}
-
 
 .birth_date, .death_date {
     display: grid;
@@ -288,7 +233,7 @@ body {
 
 .line-div-partner {
     position: absolute;
-    border-bottom: 2px solid red;
+    border-bottom: 2px solid white;
 }
 
 
