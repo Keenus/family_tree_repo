@@ -110,8 +110,6 @@ $(document).ready(function() {
 
         connectionsKey = parseInt(connectionsKey);
         connection = parseInt(connection);
-        console.log('zzzzzzzzzzzzzzzzzzzzzzzz')
-        console.log(connectionsKey , connection)
 
         const personFromElement = document.getElementById(connectionsKey);
         const personToElement = document.getElementById(connection);
@@ -136,9 +134,6 @@ $(document).ready(function() {
             let distanceBetweenPartners = connectionPersonPartnerRect.left - (connectionPersonRect.left + connectionPersonRect.width)
             middlePointBetweenPartners = connectionPersonRect.left + connectionPersonRect.width + distanceBetweenPartners / 2
         }
-        console.log('middlePointBetweenPartners' , middlePointBetweenPartners)
-
-        console.log(`line-div ${connection}-${connectionsKey}`)
 
         const startX = middlePointBetweenPartners
         const startY = connectionPersonRect.top + connectionPersonRect.height / 2;
@@ -159,9 +154,6 @@ $(document).ready(function() {
         HTMLElement.style.width = `${width}px`;
         HTMLElement.style.height = `${Math.abs(personToElementRect.top - personFromElementRect.top)}px`;
 
-        console.log('personFromElement.left' , personFromElement.left)
-        console.log('personToElement.left' , personToElement.left)
-        console.log('middlePointBetweenPartners' , middlePointBetweenPartners)
 
         let topDiv = document.createElement('div');
         topDiv.classList.add('top-div');
@@ -191,7 +183,6 @@ $(document).ready(function() {
 
 
     const generateTileOfPerson = (node) => {
-        console.log('TWORZENIE KAFELKA ', node.id)
         if(nodeCreatedFor.includes(node.id)) {
             return;
         }
@@ -204,7 +195,6 @@ $(document).ready(function() {
     }
 
     function createItem(node) {
-        console.log('TWORZENIE ELEMENTU')
         const $li = $('<li>');
         const $div = $('<div class="node"></div>');
 
@@ -245,7 +235,6 @@ $(document).ready(function() {
         const $partnerUl = $('<ul class="partner-tree"></ul>');
 
         if (partner.fId) {
-            console.log('Mamy ojca')
             const father = data.filter(person => person.id === partner.fId)[0];
             if (father) {
                 $partnerDiv.append(generateTileOfPerson(father));
@@ -254,7 +243,6 @@ $(document).ready(function() {
         }
 
         if (partner.mId) {
-            console.log('Mamy matkę')
             const mother = data.filter(person => person.id === partner.mId)[0];
             if (mother) {
                 $partnerDiv.append(generateTileOfPerson(mother));
@@ -304,11 +292,6 @@ $(document).ready(function() {
 
     function createDateDiv(className, iconClass, labelText, date) {
         return $(`<div class="${className}"><span><i class="${iconClass}"></i> ${labelText}</span> <span class="value">${date}</span></div>`);
-    }
-
-    function handlePartners(node) {
-        console.log('OBSŁUGA PARTNERÓW')
-        const partner = data.filter(person => node.pIds.includes(person.id));
     }
 
     function createChildNodes(ids) {
@@ -410,7 +393,6 @@ $(document).ready(function() {
     }
 
     function handleCreateNewMode(name, birthDate) {
-        console.log('TWORZENIE NOWEJ RODZINY')
         const { sex } = addNewForm;
         validateField('#sex', sex);
 
@@ -418,14 +400,12 @@ $(document).ready(function() {
             let newPerson = createNewPersonObject(sex, name, birthDate, addNewForm.deathDate);
             lastUsedId = 1;
             data.push(newPerson);
-            console.log('Dane', data)
             refreshTree(data);
             resetForm(); // Ensure form resets after adding new person
         }
     }
 
     function createNewPersonObject(sex, name, birthDate, deathDate) {
-        console.log('Tworzenie nowej osoby')
         return {
             id: 1,
             pIds: [],
@@ -441,7 +421,6 @@ $(document).ready(function() {
     }
 
     function refreshTree(data) {
-        console.log('ODŚWIEŻANIE DRZEWA')
         nodeCreatedFor = [];
         obj = data.reduce((acc, item) => {
             acc[item.id] = item;
@@ -464,7 +443,6 @@ $(document).ready(function() {
     }
 
     function resetForm() {
-        console.log('RESETOWANIE FORMULARZA')
         addNewForm = { ...formInterface };
         $('#name').val('');
         $('#birthDate').val(new Date().toLocaleDateString('en-US'));
@@ -481,28 +459,17 @@ $(document).ready(function() {
         let { type } = addNewForm;
         validateField('#type', type);
 
-        console.log('-------')
-        console.log('-------')
-        console.log('Dane formularza', addNewForm)
-        console.log('-------')
-        console.log('-------')
-
-
         if (name && birthDate && type) {
             type = type.toLowerCase();
             let selectedPerson = findSelectedPerson();
             if (selectedPerson) {
-                console.log('Wybrana osoba', selectedPerson)
                 if (!checkParentExistence(selectedPerson, type)) {
                     return;
                 }
 
-                console.log('typek', type)
-
                 let newPerson = createNewPersonForExistingMode(name, birthDate, addNewForm.deathDate, addNewForm.sex);
                 const preparedData = preparePerson(selectedPerson, type, lastUsedId + 1, newPerson);
 
-                console.log('Przygotowane dane', preparedData)
 
                 if (preparedData) {
                     selectedPerson = preparedData.selectedPerson;
